@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Выбор групп и дисциплин для проверки остаточных знаний</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="stage">
+        <div class="viewport" style="width:1370px;height:890px;">
+            <div class="panel">
+
+                <h1 class="h1">Выбор групп, дисциплин и ответственных</h1>
+
+                <form method="post" class="form">
+
+                    <div class="top-filters">
+                        <div class="filter-row">
+                            <div class="filter-item">
+                                <span class="filter-label">Факультет/институт:</span>
+                                <div class="select">
+                                    <select name="faculty">
+                                        <option>ФИТ</option>
+                                    </select>
+                                    <span class="caret">▾</span>
+                                </div>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">Учебный год:</span>
+                                <div class="select">
+                                    <select name="year">
+                                        <option>2024/2025</option>
+                                    </select>
+                                    <span class="caret">▾</span>
+                                </div>
+                            </div>
+                            <div class="filter-item">
+                                <span class="filter-label">Семестр:</span>
+                                <div class="select">
+                                    <select name="semester">
+                                        <option>Весна</option>
+                                    </select>
+                                    <span class="caret">▾</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-area">
+                        <table class="groups">
+                            <thead>
+                                <tr>
+                                    <th>Группа</th>
+                                    <th>Профиль подготовки</th>
+                                    <th>Группа участвует в тестировании</th>
+                                    <th>Дисциплина 1</th>
+                                    <th>Дисциплина 2</th>
+                                    <th>Ответственный преподаватель</th>
+                                    <th>Дата проведения</th>
+                                    <th>Время проведения</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for g in groups %}
+                                <tr class="{% if loop.index % 2 == 1 %}odd-row{% else %}even-row{% endif %}">
+                                    <td class="group-id">{{ g.id }}</td>
+                                    <td class="profile">{{ g.profile }}</td>
+
+                                    <!-- участвует -->
+                                    <td class="center-cell">
+                                        <label class="square-toggle" title="Группа участвует в тестировании">
+                                            <input type="checkbox" name="participates_{{ g.id }}" {% if g.participates
+                                                %}checked{% endif %}>
+                                            <span class="sq">
+                                                <svg class="icon-check" viewBox="0 0 24 24">
+                                                    <path fill="#fff"
+                                                        d="M20.285 6.709l-11.285 11.29-5.285-5.29 1.414-1.414 3.871 3.876 9.871-9.882z" />
+                                                </svg>
+                                                <svg class="icon-cross" viewBox="0 0 24 24">
+                                                    <path fill="#fff"
+                                                        d="M18.3 5.71l-1-1L12 9l-5.3-4.29-1 1L11 10l-5.3 4.29 1 1L12 11l5.3 4.29 1-1L13 10z" />
+                                                </svg>
+                                            </span>
+                                        </label>
+                                    </td>
+
+                                    <!-- дисциплина 1 -->
+                                    <td>
+                                        <div class="select full-width">
+                                            <select name="disc1_{{ g.id }}">
+                                                <option value="">Не выбрано</option>
+                                                {% for d in disciplines %}
+                                                <option value="{{ d.id }}" {% if g.discipline1_id==d.id %}selected{%
+                                                    endif %}>
+                                                    {{ d.name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                            <span class="caret">▾</span>
+                                        </div>
+                                    </td>
+
+                                    <!-- дисциплина 2 -->
+                                    <td>
+                                        <div class="select full-width">
+                                            <select name="disc2_{{ g.id }}">
+                                                <option value="">Не выбрано</option>
+                                                {% for d in disciplines %}
+                                                <option value="{{ d.id }}" {% if g.discipline2_id==d.id %}selected{%
+                                                    endif %}>
+                                                    {{ d.name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                            <span class="caret">▾</span>
+                                        </div>
+                                    </td>
+
+                                    <!-- преподаватель -->
+                                    <td>
+                                        <div class="select full-width">
+                                            <select name="teacher_{{ g.id }}">
+                                                <option value="">Не выбран</option>
+                                                {% for t in teachers %}
+                                                <option value="{{ t.id }}" {% if g.teacher_id==t.id %}selected{% endif
+                                                    %}>
+                                                    {{ t.name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                            <span class="caret">▾</span>
+                                        </div>
+                                    </td>
+
+                                    <!-- дата -->
+                                    <td>
+                                        <input class="date-input" type="date" name="date_{{ g.id }}"
+                                            value="{{ g.date or '' }}">
+                                    </td>
+
+                                    <!-- время -->
+                                    <td>
+                                        <input class="time-input" type="time" name="time_{{ g.id }}"
+                                            value="{{ g.time or '' }}">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="action">
+                        <button class="btn" type="submit">Сохранить</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
