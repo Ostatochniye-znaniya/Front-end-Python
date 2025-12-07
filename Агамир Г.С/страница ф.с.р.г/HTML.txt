@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Формирование списка рекомендуемых групп</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="stage">
+      <div class="viewport" style="width:1370px;height:890px;">
+          <div class="panel">
+
+              <h1 class="h1">Формирование списка рекомендуемых групп</h1>
+
+              <form method="post" class="form">
+
+                  <div class="top-filters">
+                      <div class="filter-row">
+                          <div class="filter-item">
+                              <span class="filter-labfa">Факультет/институт:</span>
+                              <div class="select"><select name="faculty"><option>ФИТ</option></select><span class="caret">▾</span></div>
+                          </div>
+                          <div class="filter-item">
+                              <span class="filter-labdi">Направление:</span>
+                              <div class="select"><select name="direction"><option>ИСИТ</option></select><span class="caret">▾</span></div>
+                          </div>
+                          <div class="filter-item">
+                              <span class="filter-labye">Учебный год:</span>
+                              <div class="select"><select name="year"><option>Весна</option></select><span class="caret">▾</span></div>
+                          </div>
+                          <div class="filter-item">
+                              <span class="filter-labse">Семестр:</span>
+                              <div class="select"><select name="semester"><option>2025</option></select><span class="caret">▾</span></div>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="table-area">
+                      <table class="groups">
+                          <thead>
+                              <tr>
+                                  <th>Группа</th>
+                                  <th>Курс</th>
+                                  <th>Предыдущие тестирования</th>
+                                  <th>Текущее тестирование</th>
+                                  <th>Запланировать тестирование</th>
+                              </tr>
+                              <tr class="sub-header">
+                                  <th></th>
+                                  <th></th>
+                                  <th>
+                                      <div class="periods">
+                                          <span>весна 2023</span>
+                                          <span>осень 2023</span>
+                                          <span>весна 2024</span>
+                                      </div>
+                                  </th>
+                                  <th>весна 2025</th>
+                                  <th>
+                                      <div class="periods">
+                                          <span>осень 2025</span>
+                                          <span>весна 2026</span>
+                                      </div>
+                                  </th>
+                              </tr>
+                          </thead>
+
+                          <tbody>
+                              {% for g in groups %}
+                              <tr class="{% if loop.index % 2 == 1 %}odd-row{% else %}even-row{% endif %}">
+                                  <td class="group-id">{{ g.id }}</td>
+                                  <td class="course">{{ g.course }}</td>
+
+                                  <!-- Предыдущие: три независимых чекбокса -->
+                                  <td class="prev-col">
+                                      <div class="controls-row">
+                                          <label class="square-toggle" title="весна 2023"><input type="checkbox" name="prev_{{ g.id }}_v23" {% if g.prev[0] %}checked{% endif %}>
+                                              <span class="sq">
+                                                  <svg class="icon-check" viewBox="0 0 24 24"><path fill="#fff" d="M20.285 6.709l-11.285 11.29-5.285-5.29 1.414-1.414 3.871 3.876 9.871-9.882z"/></svg>
+                                                  <svg class="icon-cross" viewBox="0 0 24 24"><path fill="#fff" d="M18.3 5.71l-1-1L12 9l-5.3-4.29-1 1L11 10l-5.3 4.29 1 1L12 11l5.3 4.29 1-1L13 10z"/></svg>
+                                              </span>
+                                          </label>
+
+                                          <label class="square-toggle" title="осень 2023">
+                                              <input type="checkbox" name="prev_{{ g.id }}_o23" {% if g.prev[1] %}checked{% endif %}>
+                                              <span class="sq">
+                                                  <svg class="icon-check" viewBox="0 0 24 24"><path fill="#fff" d="M20.285 6.709l-11.285 11.29-5.285-5.29 1.414-1.414 3.871 3.876 9.871-9.882z"/></svg>
+                                                  <svg class="icon-cross" viewBox="0 0 24 24"><path fill="#fff" d="M18.3 5.71l-1-1L12 9l-5.3-4.29-1 1L11 10l-5.3 4.29 1 1L12 11l5.3 4.29 1-1L13 10z"/></svg>
+                                              </span>
+                                          </label>
+
+                                          <label class="square-toggle" title="весна 2024">
+                                              <input type="checkbox" name="prev_{{ g.id }}_v24" {% if g.prev[2] %}checked{% endif %}>
+                                              <span class="sq">
+                                                  <svg class="icon-check" viewBox="0 0 24 24"><path fill="#fff" d="M20.285 6.709l-11.285 11.29-5.285-5.29 1.414-1.414 3.871 3.876 9.871-9.882z"/></svg>
+                                                  <svg class="icon-cross" viewBox="0 0 24 24"><path fill="#fff" d="M18.3 5.71l-1-1L12 9l-5.3-4.29-1 1L11 10l-5.3 4.29 1 1L12 11l5.3 4.29 1-1L13 10z"/></svg>
+                                              </span>
+                                          </label>
+                                      </div>
+                                  </td>
+
+                                  <!-- Текущее: один чекбокс -->
+                                  <td class="current-col">
+                                      <div class="controls-row center">
+                                          <label class="square-toggle" title="текущее тестирование">
+                                              <input type="checkbox" name="cur_{{ g.id }}" {% if g.current %}checked{% endif %}>
+                                              <span class="sq">
+                                                  <svg class="icon-check" viewBox="0 0 24 24"><path fill="#fff" d="M20.285 6.709l-11.285 11.29-5.285-5.29 1.414-1.414 3.871 3.876 9.871-9.882z"/></svg>
+                                                  <svg class="icon-cross" viewBox="0 0 24 24"><path fill="#fff" d="M18.3 5.71l-1-1L12 9l-5.3-4.29-1 1L11 10l-5.3 4.29 1 1L12 11l5.3 4.29 1-1L13 10z"/></svg>
+                                              </span>
+                                          </label>
+                                      </div>
+                                  </td>
+
+                                  <!-- Запланировать: квадраты с синей галочкой (radio -> только один) -->
+                                  <td class="plan-col">
+                                      <div class="plan-controls">
+                                          <label class="plan-square" title="Осень 2025">
+                                              <input type="radio" name="plan_{{ g.id }}" value="aut25" {% if g.plan == 'aut25' %}checked{% endif %}>
+                                              <span class="sq-plan"><svg class="plan-check" viewBox="0 0 24 24"><path fill="#fff" d="M20.285 6.709l-11.285 11.29-5.285-5.29 1.414-1.414 3.871 3.876 9.871-9.882z"/></svg>
+                                              </span>
+                                          </label>
+
+                                          <label class="plan-square" title="Весна 2026">
+                                              <input type="radio" name="plan_{{ g.id }}" value="spr26" {% if g.plan == 'spr26' %}checked{% endif %}>
+                                              <span class="sq-plan">
+                                                  <svg class="plan-check" viewBox="0 0 24 24"><path fill="#fff" d="M20.285 6.709l-11.285 11.29-5.285-5.29 1.414-1.414 3.871 3.876 9.871-9.882z"/></svg>
+                                              </span>
+                                          </label>
+                                      </div>
+                                  </td>
+                              </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+
+                  <div class="action">
+                      <button class="btn" type="submit">Сформировать</button>
+                  </div>
+              </form>
+
+          </div>
+      </div>
+  </div>
+</body>
+</html>

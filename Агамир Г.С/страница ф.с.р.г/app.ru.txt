@@ -1,0 +1,43 @@
+from flask import Flask, render_template, request, redirect, url_for
+
+app = Flask(__name__)
+
+# демо-данные
+GROUPS = [
+    {"id": "221-111", "course": 3, "prev": [0, 1, 1], "current": 0, "plan": None},
+    {"id": "221-112", "course": 3, "prev": [0, 1, 1], "current": 1, "plan": "spr26"},
+    {"id": "221-113", "course": 3, "prev": [0, 1, 1], "current": 1, "plan": "spr26"},
+    {"id": "221-114", "course": 3, "prev": [0, 1, 1], "current": 0, "plan": "aut25"},
+]
+
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        # обновляем состояния по форме
+        for g in GROUPS:
+            gid = g["id"]
+            # предыдущие три (чекбоксы)
+            v23 = bool(request.form.get(f"prev_{gid}_v23"))
+            o23 = bool(request.form.get(f"prev_{gid}_o23"))
+            v24 = bool(request.form.get(f"prev_{gid}_v24"))
+            g["prev"] = [1 if v23 else 0, 1 if o23 else 0, 1 if v24 else 0]
+
+            # текущее (чекбокс)
+            cur = bool(request.form.get(f"cur_{gid}"))
+            g["current"] = 1 if cur else 0
+
+            # план (радио)
+            plan = request.form.get(f"plan_{gid}")
+            if plan in ("aut25", "spr26"):
+                g["plan"] = plan
+            else:
+                g["plan"] = None
+
+        # redirect чтобы при обновлении страницы не повторялся POST
+        return redirect(url_for("index"))
+
+    return render_template("index.html", groups=GROUPS)
+
+if __name__ == "__main__":
+    app.run(debug=True)
