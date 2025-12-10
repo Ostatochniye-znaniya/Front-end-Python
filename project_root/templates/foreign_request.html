@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Заявка на проведение проверки другим факультетом</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="stage">
+        <div class="viewport" style="width:900px;height:600px;">
+            <div class="panel">
+
+                <h1 class="h1">Создание заявки (2.5.2)</h1>
+
+                <form method="post" class="form">
+
+                    <!-- ГРУППА -->
+                    <div class="form-row">
+                        <label class="form-label">Учебная группа:</label>
+                        <div class="select full-width">
+                            <select name="group" required>
+                                <option value="">Выберите группу</option>
+                                {% for g in groups %}
+                                <option value="{{ g.id }}">{{ g.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="caret">▾</span>
+                        </div>
+                    </div>
+
+                    <!-- ДИСЦИПЛИНА -->
+                    <div class="form-row">
+                        <label class="form-label">Дисциплина:</label>
+                        <div class="select full-width">
+                            <select name="discipline" required>
+                                <option value="">Выберите дисциплину</option>
+                                {% for d in disciplines %}
+                                <option value="{{ d.id }}">{{ d.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="caret">▾</span>
+                        </div>
+                    </div>
+
+                    <!-- ПОДРАЗДЕЛЕНИЕ-ИСПОЛНИТЕЛЬ -->
+                    <div class="form-row">
+                        <label class="form-label">Факультет-исполнитель:</label>
+                        <div class="select full-width">
+                            <select name="executor_subdivision" required>
+                                <option value="">Выберите подразделение</option>
+                                {% for s in subdivisions %}
+                                <option value="{{ s.id }}">{{ s.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="caret">▾</span>
+                        </div>
+                    </div>
+
+                    <!-- КОММЕНТАРИЙ -->
+                    <div class="form-row">
+                        <label class="form-label">Комментарий (необязательно):</label>
+                        <textarea name="comment" class="textarea"></textarea>
+                    </div>
+
+                    <!-- КНОПКА -->
+                    <div class="action">
+                        <button class="btn" type="submit">Отправить заявку</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

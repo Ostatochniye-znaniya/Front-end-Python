@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <title>Входящие заявки (2.6)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="stage">
+        <div class="viewport">
+            <div class="panel">
+
+                <h1 class="h1">Входящие заявки (2.6)</h1>
+
+                <table class="groups">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>От подразделения</th>
+                            <th>Группа</th>
+                            <th>Дисциплина</th>
+                            <th>Статус</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for r in requests %}
+                        <tr>
+                            <td>{{ r.id }}</td>
+                            <td>{{ r.from_subdivision }}</td>
+                            <td>{{ r.group }}</td>
+                            <td>{{ r.discipline }}</td>
+                            <td>{{ r.status }}</td>
+                            <td>
+                                {% if r.status == 'requested' %}
+                                <button class="btn" onclick="openModal({{ r.id }})">
+                                    Открыть
+                                </button>
+                                {% else %}
+                                ✔ Обработано
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+
+            <h2>Обработка заявки</h2>
+
+            <form method="post">
+
+                <input type="hidden" name="request_id" id="modal_request_id">
+
+                <label>Назначить преподавателя:</label>
+                <select name="teacher" required>
+                    <option value="">Выберите...</option>
+                    {% for t in teachers %}
+                    <option value="{{ t.id }}">{{ t.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Дата проведения:</label>
+                <input type="date" name="date" required>
+
+                <label>Время проведения:</label>
+                <input type="time" name="time" required>
+
+                <button class="btn" type="submit">Утвердить</button>
+                <button class="btn" type="button" onclick="closeModal()">Закрыть</button>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) {
+            document.getElementById("modal_request_id").value = id;
+            document.getElementById("modal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("modal").classList.add("hidden");
+        }
+    </script>
+
+</body>
+
+</html>

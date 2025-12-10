@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>График проверок остаточных знаний (2.6)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="stage">
+        <div class="viewport">
+            <div class="panel">
+
+                <h1 class="h1">График проверок остаточных знаний</h1>
+
+                <!-- ФИЛЬТРЫ -->
+                <form method="get" class="form">
+                    <div class="filter-row" style="margin-bottom: 20px;">
+
+                        <div class="filter-item">
+                            <span class="filter-label">Группа:</span>
+                            <input type="text" name="group" value="{{ filter_group }}" class="input">
+                        </div>
+
+                        <div class="filter-item">
+                            <span class="filter-label">Дисциплина:</span>
+                            <input type="text" name="discipline" value="{{ filter_disc }}" class="input">
+                        </div>
+
+                        <div class="filter-item">
+                            <span class="filter-label">Преподаватель:</span>
+                            <input type="text" name="teacher" value="{{ filter_teacher }}" class="input">
+                        </div>
+
+                        <button class="btn" type="submit">Фильтровать</button>
+
+                    </div>
+                </form>
+
+                <!-- ТАБЛИЦА РАСПИСАНИЯ -->
+                <table class="groups">
+                    <thead>
+                        <tr>
+                            <th>Группа</th>
+                            <th>Дисциплина</th>
+                            <th>Преподаватель</th>
+                            <th>Дата</th>
+                            <th>Время</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in schedule %}
+                        <tr>
+                            <td>{{ item.group }}</td>
+                            <td>{{ item.discipline }}</td>
+                            <td>{{ item.teacher }}</td>
+                            <td>{{ item.date }}</td>
+                            <td>{{ item.time }}</td>
+                            <td>{{ item.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
