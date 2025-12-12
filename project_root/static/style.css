@@ -354,3 +354,14 @@ select {
     font-size: 14px;
     width: 150px;
 }
+
+.form-error {
+    margin-top: 10px;
+    color: #b91c1c;
+    font-size: 13px;
+}
+
+.row-error {
+    outline: 2px solid #fca5a5;
+    background-color: #fef2f2;
+}

@@ -152,6 +152,10 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+
+                        <!-- ✅ Блок ошибок (вставляем сразу после таблицы) -->
+                        <div id="groups-errors" class="form-error"></div>
+
                     </div>
 
                     <div class="action">
@@ -162,6 +166,64 @@
             </div>
         </div>
     </div>
+
+    <!-- ✅ Скрипт валидации (вставляем перед закрытием body) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form.form");
+            const errorBox = document.getElementById("groups-errors");
+
+            if (!form) return;
+
+            form.addEventListener("submit", function (e) {
+                if (errorBox) {
+                    errorBox.textContent = "";
+                }
+
+                const rows = document.querySelectorAll(".groups tbody tr");
+                let hasErrors = false;
+
+                rows.forEach(function (row) {
+                    row.classList.remove("row-error");
+
+                    const participatesInput = row.querySelector('input[name^="participates_"]');
+                    const disc1Select = row.querySelector('select[name^="disc1_"]');
+                    const disc2Select = row.querySelector('select[name^="disc2_"]');
+                    const teacherSelect = row.querySelector('select[name^="teacher_"]');
+                    const dateInput = row.querySelector('input[name^="date_"]');
+                    const timeInput = row.querySelector('input[name^="time_"]');
+
+                    // если группа участвует → обе дисциплины обязательны
+                    if (participatesInput && participatesInput.checked) {
+                        if (!disc1Select || !disc1Select.value || !disc2Select || !disc2Select.value) {
+                            hasErrors = true;
+                            row.classList.add("row-error");
+                        }
+                    }
+
+                    // если выбран преподаватель → обязательны дата и время
+                    if (teacherSelect && teacherSelect.value) {
+                        if (!dateInput || !dateInput.value || !timeInput || !timeInput.value) {
+                            hasErrors = true;
+                            row.classList.add("row-error");
+                        }
+                    }
+                });
+
+                if (hasErrors) {
+                    e.preventDefault();
+                    if (errorBox) {
+                        errorBox.textContent =
+                            "Проверьте заполнение строк: для участвующих групп должны быть выбраны две дисциплины, " +
+                            "а при назначенном преподавателе — указаны дата и время проведения.";
+                    } else {
+                        alert("Проверьте заполнение строк: есть незаполненные поля.");
+                    }
+                }
+            });
+        });
+    </script>
+
 </body>
 
 </html>
