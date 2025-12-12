@@ -39,6 +39,11 @@
                     </div>
                 </form>
 
+                <!-- ✅ ЭКСПОРТ В CSV -->
+                <div class="action" style="justify-content: flex-start; margin-bottom: 10px;">
+                    <button type="button" class="btn" id="export-csv-btn">Выгрузить в CSV</button>
+                </div>
+
                 <!-- ТАБЛИЦА РАСПИСАНИЯ -->
                 <table class="groups">
                     <thead>
@@ -69,6 +74,61 @@
             </div>
         </div>
     </div>
+
+    <!-- ✅ СКРИПТ ЭКСПОРТА -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const exportBtn = document.getElementById("export-csv-btn");
+            if (!exportBtn) return;
+
+            exportBtn.addEventListener("click", function () {
+                const csv = buildCsvFromTable();
+                if (!csv) {
+                    alert("Нет данных для выгрузки.");
+                    return;
+                }
+
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "schedule.csv";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            function buildCsvFromTable() {
+                const table = document.querySelector("table.groups");
+                if (!table) return "";
+
+                const rows = table.querySelectorAll("tr");
+                const lines = [];
+
+                rows.forEach(function (row) {
+                    const cells = row.querySelectorAll("th, td");
+                    if (!cells.length) return;
+
+                    const values = [];
+                    cells.forEach(function (cell) {
+                        let text = cell.textContent || "";
+                        text = text.replace(/\s+/g, " ").trim();
+
+                        if (text.includes(";") || text.includes('"')) {
+                            text = '"' + text.replace(/"/g, '""') + '"';
+                        }
+
+                        values.push(text);
+                    });
+
+                    lines.push(values.join(";"));
+                });
+
+                return lines.join("\r\n");
+            }
+        });
+    </script>
 
 </body>
 
