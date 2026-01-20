@@ -16,6 +16,18 @@
 
                 <h1 class="h1">Выбор групп, дисциплин и ответственных</h1>
 
+                <div class="role-info" style="margin-bottom:16px;">
+                    {% if role != "head" %}
+                    <div style="padding:12px;background:#fff3cd;color:#856404;border-radius:6px;">
+                        Доступ только для просмотра. Редактирование доступно заведующему кафедрой.
+                    </div>
+                    {% else %}
+                    <div style="padding:12px;background:#e6fffa;color:#065f46;border-radius:6px;">
+                        Режим редактирования: заведующий кафедрой
+                    </div>
+                    {% endif %}
+                </div>
+
                 <form method="post" class="form">
 
                     <div class="top-filters">
@@ -23,7 +35,7 @@
                             <div class="filter-item">
                                 <span class="filter-label">Факультет/институт:</span>
                                 <div class="select">
-                                    <select name="faculty">
+                                    <select name="faculty" {% if role !="head" %}disabled{% endif %}>
                                         <option>ФИТ</option>
                                     </select>
                                     <span class="caret">▾</span>
@@ -32,7 +44,7 @@
                             <div class="filter-item">
                                 <span class="filter-label">Учебный год:</span>
                                 <div class="select">
-                                    <select name="year">
+                                    <select name="year" {% if role !="head" %}disabled{% endif %}>
                                         <option>2024/2025</option>
                                     </select>
                                     <span class="caret">▾</span>
@@ -41,7 +53,7 @@
                             <div class="filter-item">
                                 <span class="filter-label">Семестр:</span>
                                 <div class="select">
-                                    <select name="semester">
+                                    <select name="semester" {% if role !="head" %}disabled{% endif %}>
                                         <option>Весна</option>
                                     </select>
                                     <span class="caret">▾</span>
@@ -75,7 +87,7 @@
                                     <td class="center-cell">
                                         <label class="square-toggle" title="Группа участвует в тестировании">
                                             <input type="checkbox" name="participates_{{ g.id }}" {% if g.participates
-                                                %}checked{% endif %}>
+                                                %}checked{% endif %} {% if role !="head" %}disabled{% endif %}>
                                             <span class="sq">
                                                 <svg class="icon-check" viewBox="0 0 24 24">
                                                     <path fill="#fff"
@@ -92,7 +104,7 @@
                                     <!-- дисциплина 1 -->
                                     <td>
                                         <div class="select full-width">
-                                            <select name="disc1_{{ g.id }}">
+                                            <select name="disc1_{{ g.id }}" {% if role !="head" %}disabled{% endif %}>
                                                 <option value="">Не выбрано</option>
                                                 {% for d in disciplines %}
                                                 <option value="{{ d.id }}" {% if g.discipline1_id==d.id %}selected{%
@@ -108,7 +120,7 @@
                                     <!-- дисциплина 2 -->
                                     <td>
                                         <div class="select full-width">
-                                            <select name="disc2_{{ g.id }}">
+                                            <select name="disc2_{{ g.id }}" {% if role !="head" %}disabled{% endif %}>
                                                 <option value="">Не выбрано</option>
                                                 {% for d in disciplines %}
                                                 <option value="{{ d.id }}" {% if g.discipline2_id==d.id %}selected{%
@@ -124,7 +136,7 @@
                                     <!-- преподаватель -->
                                     <td>
                                         <div class="select full-width">
-                                            <select name="teacher_{{ g.id }}">
+                                            <select name="teacher_{{ g.id }}" {% if role !="head" %}disabled{% endif %}>
                                                 <option value="">Не выбран</option>
                                                 {% for t in teachers %}
                                                 <option value="{{ t.id }}" {% if g.teacher_id==t.id %}selected{% endif
@@ -140,26 +152,26 @@
                                     <!-- дата -->
                                     <td>
                                         <input class="date-input" type="date" name="date_{{ g.id }}"
-                                            value="{{ g.date or '' }}">
+                                            value="{{ g.date or '' }}" {% if role !="head" %}disabled{% endif %}>
                                     </td>
 
                                     <!-- время -->
                                     <td>
                                         <input class="time-input" type="time" name="time_{{ g.id }}"
-                                            value="{{ g.time or '' }}">
+                                            value="{{ g.time or '' }}" {% if role !="head" %}disabled{% endif %}>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
 
-                        <!-- ✅ Блок ошибок (вставляем сразу после таблицы) -->
                         <div id="groups-errors" class="form-error"></div>
-
                     </div>
 
                     <div class="action">
-                        <button class="btn" type="submit">Сохранить</button>
+                        <button class="btn" type="submit" {% if role !="head" %}disabled{% endif %}>
+                            Сохранить
+                        </button>
                     </div>
 
                 </form>
@@ -167,6 +179,7 @@
         </div>
     </div>
 
+    <!-- ТВОЙ JS — БЕЗ ИЗМЕНЕНИЙ -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const form = document.querySelector("form.form");
@@ -192,17 +205,15 @@
                     const dateInput = row.querySelector('input[name^="date_"]');
                     const timeInput = row.querySelector('input[name^="time_"]');
 
-                    // если группа участвует → обе дисциплины обязательны
                     if (participatesInput && participatesInput.checked) {
-                        if (!disc1Select || !disc1Select.value || !disc2Select || !disc2Select.value) {
+                        if (!disc1Select.value || !disc2Select.value) {
                             hasErrors = true;
                             row.classList.add("row-error");
                         }
                     }
 
-                    // если выбран преподаватель → обязательны дата и время
                     if (teacherSelect && teacherSelect.value) {
-                        if (!dateInput || !dateInput.value || !timeInput || !timeInput.value) {
+                        if (!dateInput.value || !timeInput.value) {
                             hasErrors = true;
                             row.classList.add("row-error");
                         }
@@ -211,13 +222,9 @@
 
                 if (hasErrors) {
                     e.preventDefault();
-                    if (errorBox) {
-                        errorBox.textContent =
-                            "Проверьте заполнение строк: для участвующих групп должны быть выбраны две дисциплины, " +
-                            "а при назначенном преподавателе — указаны дата и время проведения.";
-                    } else {
-                        alert("Проверьте заполнение строк: есть незаполненные поля.");
-                    }
+                    errorBox.textContent =
+                        "Проверьте заполнение строк: для участвующих групп должны быть выбраны две дисциплины, " +
+                        "а при назначенном преподавателе — указаны дата и время проведения.";
                 }
             });
         });

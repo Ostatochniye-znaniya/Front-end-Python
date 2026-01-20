@@ -2,6 +2,15 @@ from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
+# ========== MOCK ROLE ==========
+# Возможные значения:
+# head — заведующий кафедрой
+# faculty — ответственный факультета
+# teacher — преподаватель
+# guest — гость
+
+CURRENT_ROLE = "head"
+
 # ========== Моки (в реальном API будут заменены) ==========
 
 GROUPS = [
@@ -22,11 +31,106 @@ SUBDIVISIONS = [
     {"id": "fmm", "name": "ФММ"},
 ]
 
-# Хранилище отправленных заявок (имитация БД)
+TEACHERS = [
+    {"id": "t1", "name": "Верещагин В.Ю."},
+    {"id": "t2", "name": "Петрова А.А."},
+    {"id": "t3", "name": "Иванов И.И."},
+]
+
+# ===================== 2.5.1 — Выбор групп и дисциплин =====================
+
+GROUPS_SELECTION = [
+    {
+        "id": "221-321",
+        "profile": "Веб-технологии",
+        "participates": False,
+        "discipline1_id": "",
+        "discipline2_id": "",
+        "teacher_id": "",
+        "date": "",
+        "time": "",
+    },
+    {
+        "id": "221-322",
+        "profile": "Веб-технологии",
+        "participates": True,
+        "discipline1_id": "disc_web",
+        "discipline2_id": "disc_db",
+        "teacher_id": "t1",
+        "date": "2025-06-22",
+        "time": "12:00",
+    },
+    {
+        "id": "221-323",
+        "profile": "Интеграция и программирование в САПР",
+        "participates": False,
+        "discipline1_id": "",
+        "discipline2_id": "",
+        "teacher_id": "",
+        "date": "",
+        "time": "",
+    },
+]
+
+@app.route("/groups-selection", methods=["GET", "POST"])
+def groups_selection():
+    if request.method == "POST":
+        for g in GROUPS_SELECTION:
+            gid = g["id"]
+
+            g["participates"] = bool(request.form.get(f"participates_{gid}"))
+            g["discipline1_id"] = request.form.get(f"disc1_{gid}", "")
+            g["discipline2_id"] = request.form.get(f"disc2_{gid}", "")
+            g["teacher_id"] = request.form.get(f"teacher_{gid}", "")
+            g["date"] = request.form.get(f"date_{gid}", "")
+            g["time"] = request.form.get(f"time_{gid}", "")
+
+        print("=== 2.5.1 Сохранены данные ===")
+        print(GROUPS_SELECTION)
+
+        return redirect(url_for("groups_selection"))
+
+    return render_template(
+        "groups_selection.html",
+        groups=GROUPS_SELECTION,
+        disciplines=DISCIPLINES,
+        teachers=TEACHERS,
+        role=CURRENT_ROLE,
+    )
+
+# ===================== 2.5.2 — Заявка на чужой факультет =====================
+
 FOREIGN_REQUESTS = []
 
+@app.route("/foreign-request", methods=["GET", "POST"])
+def foreign_request():
+    if request.method == "POST":
+        data = {
+            "group_id": request.form.get("group"),
+            "discipline_id": request.form.get("discipline"),
+            "executor_subdivision_id": request.form.get("executor_subdivision"),
+            "comment": request.form.get("comment"),
+        }
 
-# ============================ Моки для входящих заявок (2.6) ============================
+        FOREIGN_REQUESTS.append(data)
+
+        print("=== Новая заявка создана ===")
+        print(data)
+
+        return redirect(url_for("foreign_request_success"))
+
+    return render_template(
+        "foreign_request.html",
+        groups=GROUPS,
+        disciplines=DISCIPLINES,
+        subdivisions=SUBDIVISIONS,
+    )
+
+@app.route("/foreign-request/success")
+def foreign_request_success():
+    return render_template("foreign_request_success.html")
+
+# ===================== 2.6 — Входящие заявки =====================
 
 INCOMING_REQUESTS = [
     {
@@ -44,6 +148,35 @@ INCOMING_REQUESTS = [
         "status": "requested"
     },
 ]
+
+@app.route("/incoming-requests", methods=["GET", "POST"])
+def incoming_requests():
+    if request.method == "POST":
+        req_id = int(request.form.get("request_id"))
+        teacher_id = request.form.get("teacher")
+        date = request.form.get("date")
+        time = request.form.get("time")
+
+        for req in INCOMING_REQUESTS:
+            if req["id"] == req_id:
+                req["status"] = "approved"
+                req["assigned_teacher"] = teacher_id
+                req["date"] = date
+                req["time"] = time
+                break
+
+        print("=== Заявка обработана ===")
+        print(req)
+
+        return redirect(url_for("incoming_requests"))
+
+    return render_template(
+        "incoming_requests.html",
+        requests=INCOMING_REQUESTS,
+        teachers=TEACHERS
+    )
+
+# ===================== 2.6 — График проверок =====================
 
 SCHEDULE = [
     {
@@ -72,85 +205,13 @@ SCHEDULE = [
     },
 ]
 
-TEACHERS = [
-    {"id": "t1", "name": "Верещагин В.Ю."},
-    {"id": "t2", "name": "Петрова А.А."},
-    {"id": "t3", "name": "Иванов И.И."},
-]
-
-
-
-# ========== Маршрут 2.5.2 — создание заявки ==========
-
-@app.route("/foreign-request", methods=["GET", "POST"])
-def foreign_request():
-    if request.method == "POST":
-        group_id = request.form.get("group")
-        discipline_id = request.form.get("discipline")
-        executor_subdivision_id = request.form.get("executor_subdivision")
-        comment = request.form.get("comment")
-
-        data = {
-            "group_id": group_id,
-            "discipline_id": discipline_id,
-            "executor_subdivision_id": executor_subdivision_id,
-            "comment": comment,
-        }
-
-        # Добавим в память (как будто сохраняем в БД)
-        FOREIGN_REQUESTS.append(data)
-
-        print("=== Новая заявка создана ===")
-        print(data)
-
-        return redirect(url_for("foreign_request_success"))
-
-    return render_template(
-        "foreign_request.html",
-        groups=GROUPS,
-        disciplines=DISCIPLINES,
-        subdivisions=SUBDIVISIONS,
-    )
-
-@app.route("/incoming-requests", methods=["GET", "POST"])
-def incoming_requests():
-
-    if request.method == "POST":
-        req_id = int(request.form.get("request_id"))
-        teacher_id = request.form.get("teacher")
-        date = request.form.get("date")
-        time = request.form.get("time")
-
-        # Находим заявку
-        for req in INCOMING_REQUESTS:
-            if req["id"] == req_id:
-                req["status"] = "approved"
-                req["assigned_teacher"] = teacher_id
-                req["date"] = date
-                req["time"] = time
-                break
-
-        print("=== Заявка обработана ===")
-        print(req)
-
-        return redirect(url_for("incoming_requests"))
-
-    return render_template(
-        "incoming_requests.html",
-        requests=INCOMING_REQUESTS,
-        teachers=TEACHERS
-    )
-
-
 @app.route("/schedule", methods=["GET"])
 def schedule_page():
-
     filter_group = request.args.get("group", "").strip()
     filter_disc = request.args.get("discipline", "").strip()
     filter_teacher = request.args.get("teacher", "").strip()
 
     filtered = []
-
     for item in SCHEDULE:
         if filter_group and filter_group not in item["group"]:
             continue
@@ -168,13 +229,7 @@ def schedule_page():
         filter_teacher=filter_teacher,
     )
 
-
-
-
-@app.route("/foreign-request/success")
-def foreign_request_success():
-    return render_template("foreign_request_success.html")
-
+# ===================== RUN =====================
 
 if __name__ == "__main__":
     app.run(debug=True)
