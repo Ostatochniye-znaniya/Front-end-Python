@@ -15,6 +15,28 @@
 
                 <h1 class="h1">Входящие заявки (2.6)</h1>
 
+                <!-- ФИЛЬТРЫ (ЗАДАЧА 4) -->
+                <div style="display:flex;gap:16px;margin-bottom:16px;">
+                    <div>
+                        <label>Статус:</label><br>
+                        <select id="filter-status">
+                            <option value="all">Все</option>
+                            <option value="requested">Ожидает назначения</option>
+                            <option value="approved">Назначено</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>Подразделение:</label><br>
+                        <select id="filter-subdivision">
+                            <option value="all">Все</option>
+                            {% for r in requests %}
+                            <option value="{{ r.from_subdivision }}">{{ r.from_subdivision }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
                 <table class="groups">
                     <thead>
                         <tr>
@@ -29,42 +51,27 @@
 
                     <tbody>
                         {% for r in requests %}
-                        <tr>
+                        <tr data-status="{{ r.status }}" data-subdivision="{{ r.from_subdivision }}">
                             <td>{{ r.id }}</td>
                             <td>{{ r.from_subdivision }}</td>
                             <td>{{ r.group }}</td>
                             <td>{{ r.discipline }}</td>
 
-                            <!-- СТАТУС С БЕЙДЖЕМ (ЗАДАЧА 3) -->
+                            <!-- СТАТУС С БЕЙДЖЕМ -->
                             <td>
                                 {% if r.status == 'requested' %}
-                                <span style="
-                                    padding:4px 8px;
-                                    border-radius:6px;
-                                    background:#fff3cd;
-                                    color:#856404;
-                                    font-size:13px;
-                                    font-weight:600;">
+                                <span
+                                    style="padding:4px 8px;border-radius:6px;background:#fff3cd;color:#856404;font-size:13px;font-weight:600;">
                                     Ожидает назначения
                                 </span>
                                 {% elif r.status == 'approved' %}
-                                <span style="
-                                    padding:4px 8px;
-                                    border-radius:6px;
-                                    background:#e6fffa;
-                                    color:#065f46;
-                                    font-size:13px;
-                                    font-weight:600;">
+                                <span
+                                    style="padding:4px 8px;border-radius:6px;background:#e6fffa;color:#065f46;font-size:13px;font-weight:600;">
                                     Назначено
                                 </span>
                                 {% else %}
-                                <span style="
-                                    padding:4px 8px;
-                                    border-radius:6px;
-                                    background:#e2e3e5;
-                                    color:#383d41;
-                                    font-size:13px;
-                                    font-weight:600;">
+                                <span
+                                    style="padding:4px 8px;border-radius:6px;background:#e2e3e5;color:#383d41;font-size:13px;font-weight:600;">
                                     Неизвестно
                                 </span>
                                 {% endif %}
@@ -129,6 +136,30 @@
         function closeModal() {
             document.getElementById("modal").classList.add("hidden");
         }
+
+        // ФИЛЬТРАЦИЯ (ЗАДАЧА 4)
+        const statusFilter = document.getElementById("filter-status");
+        const subdivisionFilter = document.getElementById("filter-subdivision");
+
+        function applyFilters() {
+            const status = statusFilter.value;
+            const subdivision = subdivisionFilter.value;
+
+            document.querySelectorAll("tbody tr").forEach(row => {
+                const rowStatus = row.dataset.status;
+                const rowSubdivision = row.dataset.subdivision;
+
+                let visible = true;
+
+                if (status !== "all" && rowStatus !== status) visible = false;
+                if (subdivision !== "all" && rowSubdivision !== subdivision) visible = false;
+
+                row.style.display = visible ? "" : "none";
+            });
+        }
+
+        statusFilter.addEventListener("change", applyFilters);
+        subdivisionFilter.addEventListener("change", applyFilters);
     </script>
 
 </body>
