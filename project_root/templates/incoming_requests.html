@@ -15,6 +15,22 @@
 
                 <h1 class="h1">Входящие заявки (2.6)</h1>
 
+                <!-- МИНИ-ДАШБОРД (ЗАДАЧА 5) -->
+                <div style="display:flex;gap:16px;margin-bottom:16px;">
+                    <div style="padding:12px 16px;border-radius:8px;background:#e2e3e5;">
+                        <div style="font-size:12px;color:#555;">Всего заявок</div>
+                        <div id="cnt-all" style="font-size:22px;font-weight:700;">0</div>
+                    </div>
+                    <div style="padding:12px 16px;border-radius:8px;background:#fff3cd;">
+                        <div style="font-size:12px;color:#856404;">Ожидают назначения</div>
+                        <div id="cnt-requested" style="font-size:22px;font-weight:700;">0</div>
+                    </div>
+                    <div style="padding:12px 16px;border-radius:8px;background:#e6fffa;">
+                        <div style="font-size:12px;color:#065f46;">Назначено</div>
+                        <div id="cnt-approved" style="font-size:22px;font-weight:700;">0</div>
+                    </div>
+                </div>
+
                 <!-- ФИЛЬТРЫ (ЗАДАЧА 4) -->
                 <div style="display:flex;gap:16px;margin-bottom:16px;">
                     <div>
@@ -57,7 +73,6 @@
                             <td>{{ r.group }}</td>
                             <td>{{ r.discipline }}</td>
 
-                            <!-- СТАТУС С БЕЙДЖЕМ -->
                             <td>
                                 {% if r.status == 'requested' %}
                                 <span
@@ -126,7 +141,7 @@
         </div>
     </div>
 
-    <!-- ТВОЙ JS — БЕЗ ИЗМЕНЕНИЙ -->
+    <!-- ТВОЙ JS — БЕЗ ИЗМЕНЕНИЙ + ДОБАВЛЕН ДАШБОРД -->
     <script>
         function openModal(id) {
             document.getElementById("modal_request_id").value = id;
@@ -137,9 +152,28 @@
             document.getElementById("modal").classList.add("hidden");
         }
 
-        // ФИЛЬТРАЦИЯ (ЗАДАЧА 4)
         const statusFilter = document.getElementById("filter-status");
         const subdivisionFilter = document.getElementById("filter-subdivision");
+
+        const cntAll = document.getElementById("cnt-all");
+        const cntRequested = document.getElementById("cnt-requested");
+        const cntApproved = document.getElementById("cnt-approved");
+
+        function updateCounters() {
+            let all = 0, requested = 0, approved = 0;
+
+            document.querySelectorAll("tbody tr").forEach(row => {
+                if (row.style.display === "none") return;
+
+                all++;
+                if (row.dataset.status === "requested") requested++;
+                if (row.dataset.status === "approved") approved++;
+            });
+
+            cntAll.textContent = all;
+            cntRequested.textContent = requested;
+            cntApproved.textContent = approved;
+        }
 
         function applyFilters() {
             const status = statusFilter.value;
@@ -156,10 +190,15 @@
 
                 row.style.display = visible ? "" : "none";
             });
+
+            updateCounters();
         }
 
         statusFilter.addEventListener("change", applyFilters);
         subdivisionFilter.addEventListener("change", applyFilters);
+
+        // первичная инициализация
+        updateCounters();
     </script>
 
 </body>
