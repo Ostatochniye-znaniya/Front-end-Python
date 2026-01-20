@@ -34,7 +34,42 @@
                             <td>{{ r.from_subdivision }}</td>
                             <td>{{ r.group }}</td>
                             <td>{{ r.discipline }}</td>
-                            <td>{{ r.status }}</td>
+
+                            <!-- СТАТУС С БЕЙДЖЕМ (ЗАДАЧА 3) -->
+                            <td>
+                                {% if r.status == 'requested' %}
+                                <span style="
+                                    padding:4px 8px;
+                                    border-radius:6px;
+                                    background:#fff3cd;
+                                    color:#856404;
+                                    font-size:13px;
+                                    font-weight:600;">
+                                    Ожидает назначения
+                                </span>
+                                {% elif r.status == 'approved' %}
+                                <span style="
+                                    padding:4px 8px;
+                                    border-radius:6px;
+                                    background:#e6fffa;
+                                    color:#065f46;
+                                    font-size:13px;
+                                    font-weight:600;">
+                                    Назначено
+                                </span>
+                                {% else %}
+                                <span style="
+                                    padding:4px 8px;
+                                    border-radius:6px;
+                                    background:#e2e3e5;
+                                    color:#383d41;
+                                    font-size:13px;
+                                    font-weight:600;">
+                                    Неизвестно
+                                </span>
+                                {% endif %}
+                            </td>
+
                             <td>
                                 {% if r.status == 'requested' %}
                                 <button class="btn" onclick="openModal({{ r.id }})">
@@ -84,6 +119,7 @@
         </div>
     </div>
 
+    <!-- ТВОЙ JS — БЕЗ ИЗМЕНЕНИЙ -->
     <script>
         function openModal(id) {
             document.getElementById("modal_request_id").value = id;
