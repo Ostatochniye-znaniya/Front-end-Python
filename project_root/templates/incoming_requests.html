@@ -31,8 +31,8 @@
                     </div>
                 </div>
 
-                <!-- ФИЛЬТРЫ (ЗАДАЧА 4) -->
-                <div style="display:flex;gap:16px;margin-bottom:16px;">
+                <!-- ФИЛЬТРЫ + ЭКСПОРТ (4 + 6) -->
+                <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-end;">
                     <div>
                         <label>Статус:</label><br>
                         <select id="filter-status">
@@ -50,6 +50,12 @@
                             <option value="{{ r.from_subdivision }}">{{ r.from_subdivision }}</option>
                             {% endfor %}
                         </select>
+                    </div>
+
+                    <div style="margin-left:auto;">
+                        <button class="btn" type="button" onclick="exportCSV()">
+                            Экспорт CSV
+                        </button>
                     </div>
                 </div>
 
@@ -106,6 +112,14 @@
                     </tbody>
                 </table>
 
+                <!-- AUDIT-LIGHT (ЗАДАЧА 7) -->
+                <div style="margin-top:24px;">
+                    <h2 style="font-size:18px;margin-bottom:8px;">История действий</h2>
+                    <div id="audit-log"
+                        style="max-height:160px;overflow:auto;background:#f8f9fa;border-radius:6px;padding:8px;font-size:13px;">
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -116,7 +130,7 @@
 
             <h2>Обработка заявки</h2>
 
-            <form method="post">
+            <form method="post" id="approve-form">
 
                 <input type="hidden" name="request_id" id="modal_request_id">
 
@@ -141,11 +155,12 @@
         </div>
     </div>
 
-    <!-- ТВОЙ JS — БЕЗ ИЗМЕНЕНИЙ + ДОБАВЛЕН ДАШБОРД -->
+    <!-- JS: всё предыдущее + AUDIT -->
     <script>
         function openModal(id) {
             document.getElementById("modal_request_id").value = id;
             document.getElementById("modal").classList.remove("hidden");
+            addAudit(`Открыта заявка ID ${id}`);
         }
 
         function closeModal() {
@@ -196,9 +211,65 @@
 
         statusFilter.addEventListener("change", applyFilters);
         subdivisionFilter.addEventListener("change", applyFilters);
-
-        // первичная инициализация
         updateCounters();
+
+        // ===== CSV (6) =====
+        function exportCSV() {
+            addAudit("Экспорт CSV");
+
+            const rows = [];
+            rows.push(["ID", "Подразделение", "Группа", "Дисциплина", "Статус"].join(";"));
+
+            document.querySelectorAll("tbody tr").forEach(row => {
+                if (row.style.display === "none") return;
+
+                const cols = row.querySelectorAll("td");
+                const statusText = cols[4].innerText.trim();
+
+                rows.push([
+                    cols[0].innerText.trim(),
+                    cols[1].innerText.trim(),
+                    cols[2].innerText.trim(),
+                    cols[3].innerText.trim(),
+                    statusText
+                ].join(";"));
+            });
+
+            const csvContent = "\uFEFF" + rows.join("\n");
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "incoming_requests.csv";
+            a.click();
+
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== AUDIT-LIGHT (7) =====
+        const AUDIT_KEY = "incoming_requests_audit";
+
+        function addAudit(text) {
+            const log = JSON.parse(localStorage.getItem(AUDIT_KEY) || "[]");
+            const ts = new Date().toLocaleString();
+            log.unshift(`[${ts}] ${text}`);
+            localStorage.setItem(AUDIT_KEY, JSON.stringify(log.slice(0, 50)));
+            renderAudit();
+        }
+
+        function renderAudit() {
+            const box = document.getElementById("audit-log");
+            const log = JSON.parse(localStorage.getItem(AUDIT_KEY) || "[]");
+            box.innerHTML = log.map(l => `<div>${l}</div>`).join("");
+        }
+
+        document.getElementById("approve-form").addEventListener("submit", function () {
+            const id = document.getElementById("modal_request_id").value;
+            addAudit(`Утверждена заявка ID ${id}`);
+        });
+
+        renderAudit();
     </script>
 
 </body>
