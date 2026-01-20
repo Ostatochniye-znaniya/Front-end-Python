@@ -3,13 +3,16 @@ from flask import Flask, render_template, request, redirect, url_for
 app = Flask(__name__)
 
 # ========== MOCK ROLE ==========
-# Возможные значения:
 # head — заведующий кафедрой
 # faculty — ответственный факультета
 # teacher — преподаватель
 # guest — гость
-
 CURRENT_ROLE = "head"
+
+# ========== MOCK EDIT PERIOD ==========
+# True  — период редактирования открыт
+# False — период закрыт (только просмотр)
+IS_EDIT_PERIOD = True
 
 # ========== Моки (в реальном API будут заменены) ==========
 
@@ -74,19 +77,19 @@ GROUPS_SELECTION = [
 
 @app.route("/groups-selection", methods=["GET", "POST"])
 def groups_selection():
-    if request.method == "POST":
+    if (
+        request.method == "POST"
+        and CURRENT_ROLE == "head"
+        and IS_EDIT_PERIOD
+    ):
         for g in GROUPS_SELECTION:
             gid = g["id"]
-
             g["participates"] = bool(request.form.get(f"participates_{gid}"))
             g["discipline1_id"] = request.form.get(f"disc1_{gid}", "")
             g["discipline2_id"] = request.form.get(f"disc2_{gid}", "")
             g["teacher_id"] = request.form.get(f"teacher_{gid}", "")
             g["date"] = request.form.get(f"date_{gid}", "")
             g["time"] = request.form.get(f"time_{gid}", "")
-
-        print("=== 2.5.1 Сохранены данные ===")
-        print(GROUPS_SELECTION)
 
         return redirect(url_for("groups_selection"))
 
@@ -96,6 +99,7 @@ def groups_selection():
         disciplines=DISCIPLINES,
         teachers=TEACHERS,
         role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD,
     )
 
 # ===================== 2.5.2 — Заявка на чужой факультет =====================
@@ -111,12 +115,7 @@ def foreign_request():
             "executor_subdivision_id": request.form.get("executor_subdivision"),
             "comment": request.form.get("comment"),
         }
-
         FOREIGN_REQUESTS.append(data)
-
-        print("=== Новая заявка создана ===")
-        print(data)
-
         return redirect(url_for("foreign_request_success"))
 
     return render_template(
@@ -164,9 +163,6 @@ def incoming_requests():
                 req["date"] = date
                 req["time"] = time
                 break
-
-        print("=== Заявка обработана ===")
-        print(req)
 
         return redirect(url_for("incoming_requests"))
 
@@ -228,8 +224,6 @@ def schedule_page():
         filter_disc=filter_disc,
         filter_teacher=filter_teacher,
     )
-
-# ===================== RUN =====================
 
 if __name__ == "__main__":
     app.run(debug=True)

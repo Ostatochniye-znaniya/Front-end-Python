@@ -16,6 +16,17 @@
 
                 <h1 class="h1">Выбор групп, дисциплин и ответственных</h1>
 
+                <!-- ИНДИКАЦИЯ ПЕРИОДА РЕДАКТИРОВАНИЯ (ЗАДАЧА 2) -->
+                {% if not is_edit_period %}
+                <div style="margin-bottom:16px;padding:12px;background:#fdecea;color:#611a15;border-radius:6px;">
+                    Период редактирования закрыт. Доступен только просмотр данных.
+                </div>
+                {% else %}
+                <div style="margin-bottom:16px;padding:12px;background:#e6fffa;color:#065f46;border-radius:6px;">
+                    Период редактирования открыт.
+                </div>
+                {% endif %}
+
                 <div class="role-info" style="margin-bottom:16px;">
                     {% if role != "head" %}
                     <div style="padding:12px;background:#fff3cd;color:#856404;border-radius:6px;">
@@ -35,7 +46,8 @@
                             <div class="filter-item">
                                 <span class="filter-label">Факультет/институт:</span>
                                 <div class="select">
-                                    <select name="faculty" {% if role !="head" %}disabled{% endif %}>
+                                    <select name="faculty" {% if role !="head" or not is_edit_period %}disabled{% endif
+                                        %}>
                                         <option>ФИТ</option>
                                     </select>
                                     <span class="caret">▾</span>
@@ -44,7 +56,7 @@
                             <div class="filter-item">
                                 <span class="filter-label">Учебный год:</span>
                                 <div class="select">
-                                    <select name="year" {% if role !="head" %}disabled{% endif %}>
+                                    <select name="year" {% if role !="head" or not is_edit_period %}disabled{% endif %}>
                                         <option>2024/2025</option>
                                     </select>
                                     <span class="caret">▾</span>
@@ -53,7 +65,8 @@
                             <div class="filter-item">
                                 <span class="filter-label">Семестр:</span>
                                 <div class="select">
-                                    <select name="semester" {% if role !="head" %}disabled{% endif %}>
+                                    <select name="semester" {% if role !="head" or not is_edit_period %}disabled{% endif
+                                        %}>
                                         <option>Весна</option>
                                     </select>
                                     <span class="caret">▾</span>
@@ -83,11 +96,11 @@
                                     <td class="group-id">{{ g.id }}</td>
                                     <td class="profile">{{ g.profile }}</td>
 
-                                    <!-- участвует -->
                                     <td class="center-cell">
                                         <label class="square-toggle" title="Группа участвует в тестировании">
                                             <input type="checkbox" name="participates_{{ g.id }}" {% if g.participates
-                                                %}checked{% endif %} {% if role !="head" %}disabled{% endif %}>
+                                                %}checked{% endif %} {% if role !="head" or not is_edit_period
+                                                %}disabled{% endif %}>
                                             <span class="sq">
                                                 <svg class="icon-check" viewBox="0 0 24 24">
                                                     <path fill="#fff"
@@ -101,10 +114,10 @@
                                         </label>
                                     </td>
 
-                                    <!-- дисциплина 1 -->
                                     <td>
                                         <div class="select full-width">
-                                            <select name="disc1_{{ g.id }}" {% if role !="head" %}disabled{% endif %}>
+                                            <select name="disc1_{{ g.id }}" {% if role !="head" or not is_edit_period
+                                                %}disabled{% endif %}>
                                                 <option value="">Не выбрано</option>
                                                 {% for d in disciplines %}
                                                 <option value="{{ d.id }}" {% if g.discipline1_id==d.id %}selected{%
@@ -117,10 +130,10 @@
                                         </div>
                                     </td>
 
-                                    <!-- дисциплина 2 -->
                                     <td>
                                         <div class="select full-width">
-                                            <select name="disc2_{{ g.id }}" {% if role !="head" %}disabled{% endif %}>
+                                            <select name="disc2_{{ g.id }}" {% if role !="head" or not is_edit_period
+                                                %}disabled{% endif %}>
                                                 <option value="">Не выбрано</option>
                                                 {% for d in disciplines %}
                                                 <option value="{{ d.id }}" {% if g.discipline2_id==d.id %}selected{%
@@ -133,10 +146,10 @@
                                         </div>
                                     </td>
 
-                                    <!-- преподаватель -->
                                     <td>
                                         <div class="select full-width">
-                                            <select name="teacher_{{ g.id }}" {% if role !="head" %}disabled{% endif %}>
+                                            <select name="teacher_{{ g.id }}" {% if role !="head" or not is_edit_period
+                                                %}disabled{% endif %}>
                                                 <option value="">Не выбран</option>
                                                 {% for t in teachers %}
                                                 <option value="{{ t.id }}" {% if g.teacher_id==t.id %}selected{% endif
@@ -149,16 +162,16 @@
                                         </div>
                                     </td>
 
-                                    <!-- дата -->
                                     <td>
                                         <input class="date-input" type="date" name="date_{{ g.id }}"
-                                            value="{{ g.date or '' }}" {% if role !="head" %}disabled{% endif %}>
+                                            value="{{ g.date or '' }}" {% if role !="head" or not is_edit_period
+                                            %}disabled{% endif %}>
                                     </td>
 
-                                    <!-- время -->
                                     <td>
                                         <input class="time-input" type="time" name="time_{{ g.id }}"
-                                            value="{{ g.time or '' }}" {% if role !="head" %}disabled{% endif %}>
+                                            value="{{ g.time or '' }}" {% if role !="head" or not is_edit_period
+                                            %}disabled{% endif %}>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -169,7 +182,8 @@
                     </div>
 
                     <div class="action">
-                        <button class="btn" type="submit" {% if role !="head" %}disabled{% endif %}>
+                        <button class="btn" type="submit" {% if role !="head" or not is_edit_period %}disabled{% endif
+                            %}>
                             Сохранить
                         </button>
                     </div>
