@@ -225,5 +225,14 @@ def schedule_page():
         filter_teacher=filter_teacher,
     )
 
+# ===================== 3.0 — Аналитика =====================
+
+@app.route("/analytics", methods=["GET"])
+def analytics_page():
+    return render_template(
+        "analytics.html",
+        requests=INCOMING_REQUESTS
+    )
+
 if __name__ == "__main__":
     app.run(debug=True)

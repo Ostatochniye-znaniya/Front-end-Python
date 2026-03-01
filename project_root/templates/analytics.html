@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <title>Аналитика</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <div class="stage">
+        <div class="viewport">
+            <div class="panel">
+
+                <h1 class="h1">Аналитика по проверкам остаточных знаний</h1>
+
+                <!-- Блоки под графики -->
+                <div style="display:flex;gap:24px;margin-top:24px;flex-wrap:wrap;">
+
+                    <!-- Диаграмма по статусам -->
+                    <div style="flex:1;min-width:300px;background:#ffffff;padding:20px;border-radius:8px;">
+                        <h2 style="font-size:18px;margin-bottom:16px;">
+                            Распределение заявок по статусам
+                        </h2>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+
+                    <!-- Диаграмма по подразделениям -->
+                    <div style="flex:1;min-width:300px;background:#ffffff;padding:20px;border-radius:8px;">
+                        <h2 style="font-size:18px;margin-bottom:16px;">
+                            Заявки по подразделениям
+                        </h2>
+                        <canvas id="subdivisionChart"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
