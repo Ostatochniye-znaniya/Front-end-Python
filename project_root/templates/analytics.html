@@ -28,7 +28,7 @@
                         <canvas id="statusChart"></canvas>
                     </div>
 
-                    <!-- Диаграмма по подразделениям (пока пустая, будет 1.3) -->
+                    <!-- Диаграмма по подразделениям -->
                     <div style="flex:1;min-width:300px;background:#ffffff;padding:20px;border-radius:8px;">
                         <h2 style="font-size:18px;margin-bottom:16px;">
                             Заявки по подразделениям
@@ -43,10 +43,11 @@
     </div>
 
     <script>
-        // ===== Получаем данные из Flask =====
         const requests = {{ requests | tojson }};
 
-        // ===== Подсчёт по статусам =====
+        // ================================
+        // 1️⃣ Диаграмма по статусам (1.2)
+        // ================================
         const statusCounts = {};
 
         requests.forEach(r => {
@@ -59,18 +60,14 @@
         const statusLabels = Object.keys(statusCounts);
         const statusValues = Object.values(statusCounts);
 
-        // Цвета для статусов
         const statusColors = [
-            "#ffc107", // requested — жёлтый
-            "#28a745", // approved — зелёный
-            "#dc3545", // rejected (на будущее)
-            "#6c757d"  // fallback
+            "#ffc107", // requested
+            "#28a745", // approved
+            "#dc3545",
+            "#6c757d"
         ];
 
-        // ===== Строим круговую диаграмму =====
-        const ctxStatus = document.getElementById('statusChart').getContext('2d');
-
-        new Chart(ctxStatus, {
+        new Chart(document.getElementById('statusChart'), {
             type: 'pie',
             data: {
                 labels: statusLabels,
@@ -82,8 +79,45 @@
             options: {
                 responsive: true,
                 plugins: {
-                    legend: {
-                        position: 'bottom'
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // ==========================================
+        // 2️⃣ Диаграмма по подразделениям (1.3)
+        // ==========================================
+        const subdivisionCounts = {};
+
+        requests.forEach(r => {
+            const subdivision = r.from_subdivision;
+            if (!subdivisionCounts[subdivision]) {
+                subdivisionCounts[subdivision] = 0;
+            }
+            subdivisionCounts[subdivision]++;
+        });
+
+        const subdivisionLabels = Object.keys(subdivisionCounts);
+        const subdivisionValues = Object.values(subdivisionCounts);
+
+        new Chart(document.getElementById('subdivisionChart'), {
+            type: 'bar',
+            data: {
+                labels: subdivisionLabels,
+                datasets: [{
+                    label: 'Количество заявок',
+                    data: subdivisionValues,
+                    backgroundColor: "#007bff"
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
                     }
                 }
             }
