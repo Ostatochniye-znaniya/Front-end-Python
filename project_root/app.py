@@ -234,5 +234,12 @@ def analytics_page():
         requests=INCOMING_REQUESTS
     )
 
+@app.route("/calendar")
+def calendar_page():
+    return render_template(
+        "calendar.html",
+        schedule=SCHEDULE
+    )
+
 if __name__ == "__main__":
     app.run(debug=True)
