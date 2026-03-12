@@ -17,7 +17,29 @@
             <div class="panel">
 
                 <h1 class="h1">Аналитика по проверкам остаточных знаний</h1>
+                <!-- ПРОГРЕСС ВЫПОЛНЕНИЯ -->
+                <div style="margin-top:25px;margin-bottom:25px;">
 
+                <h2 style="font-size:18px;margin-bottom:10px;">
+                Прогресс выполнения проверок
+                </h2>
+
+                <div style="background:#e9ecef;border-radius:8px;height:25px;overflow:hidden;">
+                <div id="progressBar"
+                style="
+                height:25px;
+                width:0%;
+                background:#28a745;
+                text-align:center;
+                color:white;
+                font-weight:bold;
+                line-height:25px;
+                ">
+                0%
+                </div>
+                </div>
+
+                </div>
                 <div style="display:flex;gap:24px;margin-top:24px;flex-wrap:wrap;">
 
                     <!-- Диаграмма по статусам -->
@@ -44,8 +66,24 @@
 
     <script>
         const requests = {{ requests | tojson }};
+        
+        // ======================
+        // ПРОГРЕСС ВЫПОЛНЕНИЯ
+        // ======================
 
-        // ================================
+        const totalRequests = requests.length;
+
+        const approvedRequests = requests.filter(r => r.status === "approved").length;
+
+        const progressPercent = totalRequests
+        ? Math.round((approvedRequests / totalRequests) * 100)
+        : 0;
+
+        const progressBar = document.getElementById("progressBar");
+
+        progressBar.style.width = progressPercent + "%";
+        progressBar.textContent = progressPercent + "%";
+                // ================================
         // 1️⃣ Диаграмма по статусам (1.2)
         // ================================
         const statusCounts = {};
