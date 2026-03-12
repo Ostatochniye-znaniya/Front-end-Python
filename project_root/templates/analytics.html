@@ -17,6 +17,16 @@
             <div class="panel">
 
                 <h1 class="h1">Аналитика по проверкам остаточных знаний</h1>
+                <!-- ФИЛЬТР ПОДРАЗДЕЛЕНИЯ -->
+                <div style="margin-top:20px;margin-bottom:20px;">
+
+                <label>Фильтр по подразделению:</label>
+
+                <select id="subdivisionFilter" style="margin-left:10px;padding:6px;">
+                <option value="all">Все подразделения</option>
+                </select>
+
+                </div>
                 <!-- ПРОГРЕСС ВЫПОЛНЕНИЯ -->
                 <div style="margin-top:25px;margin-bottom:25px;">
 
@@ -66,6 +76,29 @@
 
     <script>
         const requests = {{ requests | tojson }};
+
+        // ======================
+        // заполнение dropdown
+        // ======================
+
+        const filter = document.getElementById("subdivisionFilter");
+
+        const subdivisions = new Set();
+
+        requests.forEach(r => {
+            subdivisions.add(r.from_subdivision);
+        });
+
+        subdivisions.forEach(s => {
+
+            const option = document.createElement("option");
+
+            option.value = s;
+            option.textContent = s;
+
+            filter.appendChild(option);
+
+        });
         
         // ======================
         // ПРОГРЕСС ВЫПОЛНЕНИЯ
@@ -159,6 +192,28 @@
                     }
                 }
             }
+        });
+                
+        // ======================
+        // ФИЛЬТР АНАЛИТИКИ
+        // ======================
+
+        filter.addEventListener("change", () => {
+
+            const selected = filter.value;
+
+            let filteredRequests = requests;
+
+            if(selected !== "all"){
+
+                filteredRequests = requests.filter(
+                    r => r.from_subdivision === selected
+                );
+
+            }
+
+            location.reload();
+
         });
     </script>
 
