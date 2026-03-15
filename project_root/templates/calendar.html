@@ -15,7 +15,17 @@
 <div class="panel">
 
 <h1 class="h1">Календарь проверок</h1>
+<!-- ФИЛЬТР ПО ПРЕПОДАВАТЕЛЮ -->
 
+<div style="margin-top:20px;margin-bottom:20px;">
+
+<label>Фильтр по преподавателю:</label>
+
+<select id="teacherFilter" style="margin-left:10px;padding:6px;">
+<option value="all">Все преподаватели</option>
+</select>
+
+</div>
 <table class="groups">
 
 <thead>
@@ -32,11 +42,19 @@
 
 {% for s in schedule %}
 
-<tr>
+<tr data-teacher="{{ s.teacher }}" onclick="openModal(
+'{{ s.date }}',
+'{{ s.group }}',
+'{{ s.discipline }}',
+'{{ s.teacher }}',
+'{{ s.status }}'
+)">
+
 <td>{{ s.date }}</td>
 <td>{{ s.group }}</td>
 <td>{{ s.discipline }}</td>
 <td>{{ s.teacher }}</td>
+
 <td>
 
 {% if s.status == "confirmed" %}
@@ -81,6 +99,7 @@ font-weight:600;
 {% endif %}
 
 </td>
+
 </tr>
 
 {% endfor %}
@@ -93,6 +112,96 @@ font-weight:600;
 </div>
 </div>
 
-</body>
 
+<!-- МОДАЛКА -->
+<div id="modal" class="modal hidden">
+
+<div class="modal-content">
+
+<h2>Детали проверки</h2>
+
+<p><b>Дата:</b> <span id="m_date"></span></p>
+<p><b>Группа:</b> <span id="m_group"></span></p>
+<p><b>Дисциплина:</b> <span id="m_disc"></span></p>
+<p><b>Преподаватель:</b> <span id="m_teacher"></span></p>
+<p><b>Статус:</b> <span id="m_status"></span></p>
+
+<button class="btn" onclick="closeModal()">Закрыть</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+function openModal(date, group, disc, teacher, status){
+
+document.getElementById("m_date").innerText = date;
+document.getElementById("m_group").innerText = group;
+document.getElementById("m_disc").innerText = disc;
+document.getElementById("m_teacher").innerText = teacher;
+document.getElementById("m_status").innerText = status;
+
+document.getElementById("modal").classList.remove("hidden");
+
+}
+
+function closeModal(){
+
+document.getElementById("modal").classList.add("hidden");
+
+}
+
+// ======================
+// ФИЛЬТР ПО ПРЕПОДАВАТЕЛЮ
+// ======================
+
+const teacherFilter = document.getElementById("teacherFilter");
+
+const teachers = new Set();
+
+document.querySelectorAll("tbody tr").forEach(row => {
+
+const teacher = row.dataset.teacher;
+
+teachers.add(teacher);
+
+});
+
+teachers.forEach(t => {
+
+const option = document.createElement("option");
+
+option.value = t;
+option.textContent = t;
+
+teacherFilter.appendChild(option);
+
+});
+
+teacherFilter.addEventListener("change", () => {
+
+const selected = teacherFilter.value;
+
+document.querySelectorAll("tbody tr").forEach(row => {
+
+if(selected === "all"){
+
+row.style.display = "";
+
+}else{
+
+row.style.display = row.dataset.teacher === selected
+? ""
+: "none";
+
+}
+
+});
+
+});
+</script>
+
+</body>
 </html>
