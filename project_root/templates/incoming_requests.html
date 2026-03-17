@@ -82,6 +82,11 @@
                     </thead>
 
                     <tbody>
+                        <tr id="empty-row" style="display:none;">
+                            <td colspan="7" style="text-align:center;padding:20px;color:#777;">
+                                Нет данных для отображения
+                            </td>
+                        </tr>
                         {% for r in requests %}
                         <tr data-status="{{ r.status }}" data-subdivision="{{ r.from_subdivision }}">
                             <td>{{ r.id }}</td>
@@ -202,6 +207,7 @@
         const cntRequested = document.getElementById("cnt-requested");
         const cntApproved = document.getElementById("cnt-approved");
         const foundCount = document.getElementById("found-count");
+        const emptyRow = document.getElementById("empty-row");
         function updateCounters() {
             let all = 0, requested = 0, approved = 0, rejected = 0;
 
@@ -257,6 +263,19 @@
         applyFilters();
         highlightRows();
         highlightToday();
+
+        let visibleCount = 0;
+        
+        document.querySelectorAll("tbody tr").forEach(row => {
+            if (row.id === "empty-row") return;
+            if (row.style.display !== "none") visibleCount++;
+        });
+
+        if (visibleCount === 0) {
+            emptyRow.style.display = "";
+        } else {
+            emptyRow.style.display = "none";
+        }
 
         // ===== CSV (6) =====
         function exportCSV() {
