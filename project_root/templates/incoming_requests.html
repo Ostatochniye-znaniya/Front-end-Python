@@ -56,7 +56,9 @@
                             {% endfor %}
                         </select>
                     </div>
-
+                    <button class="btn" type="button" onclick="sortByDate()">
+                        Сортировать по дате
+                    </button>
                     <div style="margin-left:auto;">
                         <button class="btn" type="button" onclick="exportCSV()">
                             Экспорт CSV
@@ -348,6 +350,27 @@
                 }
 
             });
+
+        }
+
+        function sortByDate() {
+
+            const tbody = document.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+
+            rows.sort((a, b) => {
+
+                const dateA = a.children[5].innerText.trim();
+                const dateB = b.children[5].innerText.trim();
+
+                // если нет даты → вниз
+                if (dateA === "—") return 1;
+                if (dateB === "—") return -1;
+
+                return new Date(dateA) - new Date(dateB);
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
 
         }
     </script>
