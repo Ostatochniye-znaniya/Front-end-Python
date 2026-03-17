@@ -32,6 +32,10 @@
                 </div>
 
                 <!-- ФИЛЬТРЫ + ЭКСПОРТ (4 + 6) -->
+                <div>
+                    <label>Поиск:</label><br>
+                    <input id="search-input" type="text" placeholder="Группа или дисциплина" style="padding:6px;">
+                </div>
                 <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-end;">
                     <div>
                         <label>Статус:</label><br>
@@ -187,6 +191,7 @@
         }
 
         const statusFilter = document.getElementById("filter-status");
+        const searchInput = document.getElementById("search-input");
         const subdivisionFilter = document.getElementById("filter-subdivision");
 
         const cntAll = document.getElementById("cnt-all");
@@ -213,15 +218,23 @@
         function applyFilters() {
             const status = statusFilter.value;
             const subdivision = subdivisionFilter.value;
+            const search = searchInput.value.toLowerCase();
 
             document.querySelectorAll("tbody tr").forEach(row => {
                 const rowStatus = row.dataset.status;
                 const rowSubdivision = row.dataset.subdivision;
 
+                const group = row.children[2].innerText.toLowerCase();
+                const discipline = row.children[3].innerText.toLowerCase();
+
                 let visible = true;
 
                 if (status !== "all" && rowStatus !== status) visible = false;
                 if (subdivision !== "all" && rowSubdivision !== subdivision) visible = false;
+
+                if (search && !(group.includes(search) || discipline.includes(search))) {
+                    visible = false;
+                }
 
                 row.style.display = visible ? "" : "none";
             });
@@ -231,6 +244,7 @@
 
         statusFilter.addEventListener("change", applyFilters);
         subdivisionFilter.addEventListener("change", applyFilters);
+        searchInput.addEventListener("input", applyFilters);
         updateCounters();
 
         // ===== CSV (6) =====
