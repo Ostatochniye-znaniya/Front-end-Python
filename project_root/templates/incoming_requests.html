@@ -234,6 +234,8 @@
             const search = searchInput.value.toLowerCase();
 
             document.querySelectorAll("tbody tr").forEach(row => {
+                if (row.id === "empty-row") return;
+
                 const rowStatus = row.dataset.status;
                 const rowSubdivision = row.dataset.subdivision;
 
@@ -256,18 +258,15 @@
             highlightRows();
             highlightToday();
 
+            // empty state
             let visibleCount = 0;
-            
+
             document.querySelectorAll("tbody tr").forEach(row => {
                 if (row.id === "empty-row") return;
                 if (row.style.display !== "none") visibleCount++;
             });
 
-            if (visibleCount === 0) {
-                emptyRow.style.display = "";
-            } else {
-                emptyRow.style.display = "none";
-            }
+            emptyRow.style.display = visibleCount === 0 ? "" : "none";
         }
 
         statusFilter.addEventListener("change", applyFilters);
@@ -345,7 +344,7 @@
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ request_id: id })
+                body: JSON.stringify({ request_id: parseInt(id) })
             }).then(() => {
                 addAudit(`Отклонена заявка ID ${id}`);
                 location.reload();
@@ -377,16 +376,17 @@
         function sortByDate() {
 
             const tbody = document.querySelector("tbody");
-            const rows = Array.from(tbody.querySelectorAll("tr"));
+
+            const rows = Array.from(tbody.querySelectorAll("tr"))
+                .filter(row => row.id !== "empty-row");
 
             rows.sort((a, b) => {
 
-                const dateA = a.children[5].innerText.trim();
-                const dateB = b.children[5].innerText.trim();
+                const dateA = a.children[5]?.innerText.trim();
+                const dateB = b.children[5]?.innerText.trim();
 
-                // если нет даты → вниз
-                if (dateA === "—") return 1;
-                if (dateB === "—") return -1;
+                if (!dateA || dateA === "—") return 1;
+                if (!dateB || dateB === "—") return -1;
 
                 return new Date(dateA) - new Date(dateB);
             });
@@ -397,9 +397,16 @@
 
         function highlightToday(){
 
-            const today = new Date().toISOString().split("T")[0];
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            const todayStr = `${yyyy}-${mm}-${dd}`;
 
             document.querySelectorAll("tbody tr").forEach(row => {
+
+                if (!row.children[5]) return;
 
                 const dateCell = row.children[5].innerText.trim();
 
@@ -407,7 +414,7 @@
 
                 const rowDate = dateCell.split(" ")[0];
 
-                if(rowDate === today){
+                if(rowDate === todayStr){
                     row.style.border = "2px solid #0d6efd";
                 }
 

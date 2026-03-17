@@ -142,10 +142,58 @@ INCOMING_REQUESTS = [
     {
         "id": 2,
         "from_subdivision": "ФБК",
-        "group": "221-322",
+        "group": "231-322",
+        "discipline": "Базы данных",
+        "status": "approved",
+        "date": "2025-06-22",
+        "time": "12:00"
+    },
+    {
+        "id": 3,
+        "from_subdivision": "ФММ",
+        "group": "221-323",
+        "discipline": "Искусственный интеллект",
+        "status": "rejected"
+    },
+    {
+        "id": 4,
+        "from_subdivision": "ФИТ",
+        "group": "221-324",
+        "discipline": "Веб-разработка",
+        "status": "approved",
+        "date": "2026-03-17",  # сегодняшняя дата (для подсветки)
+        "time": "10:00"
+    },
+    {
+        "id": 5,
+        "from_subdivision": "ФБК",
+        "group": "221-325",
         "discipline": "Базы данных",
         "status": "requested"
     },
+    {
+        "id": 6,
+        "from_subdivision": "ФММ",
+        "group": "221-326",
+        "discipline": "Математическое моделирование",
+        "status": "rejected"
+    },
+    {
+        "id": 7,
+        "from_subdivision": "ФИТ",
+        "group": "231-327",
+        "discipline": "Алгоритмы и структуры данных",
+        "status": "approved",
+        "date": "2025-07-01",
+        "time": "09:00"
+    },
+    {
+        "id": 8,
+        "from_subdivision": "ФБК",
+        "group": "231-328",
+        "discipline": "Экономика",
+        "status": "requested"
+    }
 ]
 
 @app.route("/incoming-requests", methods=["GET", "POST"])
