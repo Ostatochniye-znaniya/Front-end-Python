@@ -39,6 +39,7 @@
                             <option value="all">Все</option>
                             <option value="requested">Ожидает назначения</option>
                             <option value="approved">Назначено</option>
+                            <option value="rejected">Отклонено</option>
                         </select>
                     </div>
 
@@ -86,6 +87,11 @@
                                     Ожидает назначения
                                 </span>
                                 {% elif r.status == 'approved' %}
+                                {% elif r.status == 'rejected' %}
+                                <span
+                                    style="padding:4px 8px;border-radius:6px;background:#f8d7da;color:#842029;font-size:13px;font-weight:600;">
+                                    Отклонено
+                                </span>
                                 <span
                                     style="padding:4px 8px;border-radius:6px;background:#e6fffa;color:#065f46;font-size:13px;font-weight:600;">
                                     Назначено
@@ -175,7 +181,7 @@
         const cntApproved = document.getElementById("cnt-approved");
 
         function updateCounters() {
-            let all = 0, requested = 0, approved = 0;
+            let all = 0, requested = 0, approved = 0, rejected = 0;
 
             document.querySelectorAll("tbody tr").forEach(row => {
                 if (row.style.display === "none") return;
@@ -183,6 +189,7 @@
                 all++;
                 if (row.dataset.status === "requested") requested++;
                 if (row.dataset.status === "approved") approved++;
+                if (row.dataset.status === "rejected") rejected++;
             });
 
             cntAll.textContent = all;
