@@ -244,20 +244,22 @@
                 row.style.display = visible ? "" : "none";
             });
 
-            updateCounters();
+            applyFilters();
+            highlightRows();
         }
 
         statusFilter.addEventListener("change", applyFilters);
         subdivisionFilter.addEventListener("change", applyFilters);
         searchInput.addEventListener("input", applyFilters);
-        updateCounters();
+        applyFilters();
+        highlightRows();
 
         // ===== CSV (6) =====
         function exportCSV() {
             addAudit("Экспорт CSV");
 
             const rows = [];
-            rows.push(["ID", "Подразделение", "Группа", "Дисциплина", "Статус"].join(";"));
+            rows.push(["ID", "Подразделение", "Группа", "Дисциплина", "Статус", "Дата"].join(";"));
 
             document.querySelectorAll("tbody tr").forEach(row => {
                 if (row.style.display === "none") return;
@@ -270,6 +272,7 @@
                     cols[1].innerText.trim(),
                     cols[2].innerText.trim(),
                     cols[3].innerText.trim(),
+                    cols[5].innerText.trim(),
                     statusText
                 ].join(";"));
             });
@@ -323,6 +326,27 @@
             }).then(() => {
                 addAudit(`Отклонена заявка ID ${id}`);
                 location.reload();
+            });
+
+        }
+
+        function highlightRows(){
+
+            document.querySelectorAll("tbody tr").forEach(row => {
+
+                const status = row.dataset.status;
+
+                // сброс
+                row.style.background = "";
+
+                if(status === "requested"){
+                    row.style.background = "#fff8e1"; // светло-жёлтый
+                }
+
+                if(status === "rejected"){
+                    row.style.background = "#fdecea"; // светло-красный
+                }
+
             });
 
         }
