@@ -63,7 +63,9 @@
                         </button>
                     </div>
                 </div>
-
+                <div style="margin-bottom:10px;font-size:14px;">
+                    Найдено заявок: <b id="found-count">0</b>
+                </div>
                 <table class="groups">
                     <thead>
                         <tr>
@@ -197,7 +199,7 @@
         const cntAll = document.getElementById("cnt-all");
         const cntRequested = document.getElementById("cnt-requested");
         const cntApproved = document.getElementById("cnt-approved");
-
+        const foundCount = document.getElementById("found-count");
         function updateCounters() {
             let all = 0, requested = 0, approved = 0, rejected = 0;
 
@@ -205,6 +207,7 @@
                 if (row.style.display === "none") return;
 
                 all++;
+
                 if (row.dataset.status === "requested") requested++;
                 if (row.dataset.status === "approved") approved++;
                 if (row.dataset.status === "rejected") rejected++;
@@ -213,6 +216,8 @@
             cntAll.textContent = all;
             cntRequested.textContent = requested;
             cntApproved.textContent = approved;
+
+            foundCount.textContent = all;
         }
 
         function applyFilters() {
