@@ -252,9 +252,22 @@
                 row.style.display = visible ? "" : "none";
             });
 
-            applyFilters();
+            updateCounters();
             highlightRows();
             highlightToday();
+
+            let visibleCount = 0;
+            
+            document.querySelectorAll("tbody tr").forEach(row => {
+                if (row.id === "empty-row") return;
+                if (row.style.display !== "none") visibleCount++;
+            });
+
+            if (visibleCount === 0) {
+                emptyRow.style.display = "";
+            } else {
+                emptyRow.style.display = "none";
+            }
         }
 
         statusFilter.addEventListener("change", applyFilters);
@@ -263,19 +276,6 @@
         applyFilters();
         highlightRows();
         highlightToday();
-
-        let visibleCount = 0;
-        
-        document.querySelectorAll("tbody tr").forEach(row => {
-            if (row.id === "empty-row") return;
-            if (row.style.display !== "none") visibleCount++;
-        });
-
-        if (visibleCount === 0) {
-            emptyRow.style.display = "";
-        } else {
-            emptyRow.style.display = "none";
-        }
 
         // ===== CSV (6) =====
         function exportCSV() {
@@ -295,8 +295,8 @@
                     cols[1].innerText.trim(),
                     cols[2].innerText.trim(),
                     cols[3].innerText.trim(),
-                    cols[5].innerText.trim(),
-                    statusText
+                    statusText,
+                    cols[5].innerText.trim()
                 ].join(";"));
             });
 
