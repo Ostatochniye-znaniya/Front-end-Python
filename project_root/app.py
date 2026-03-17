@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 
 app = Flask(__name__)
 
@@ -241,5 +241,18 @@ def calendar_page():
         schedule=SCHEDULE
     )
 
+@app.route("/reject-request", methods=["POST"])
+def reject_request():
+    data = request.get_json()
+    req_id = int(data.get("request_id"))
+
+    for req in INCOMING_REQUESTS:
+        if req["id"] == req_id:
+            req["status"] = "rejected"
+            break
+
+    return jsonify({"status": "ok"})
+
 if __name__ == "__main__":
     app.run(debug=True)
+
