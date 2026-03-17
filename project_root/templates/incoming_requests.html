@@ -68,6 +68,7 @@
                             <th>Группа</th>
                             <th>Дисциплина</th>
                             <th>Статус</th>
+                            <th>Дата назначения</th>
                             <th>Действие</th>
                         </tr>
                     </thead>
@@ -82,25 +83,32 @@
 
                             <td>
                                 {% if r.status == 'requested' %}
-                                <span
-                                    style="padding:4px 8px;border-radius:6px;background:#fff3cd;color:#856404;font-size:13px;font-weight:600;">
+                                <span style="padding:4px 8px;border-radius:6px;background:#fff3cd;color:#856404;font-size:13px;font-weight:600;">
                                     Ожидает назначения
                                 </span>
+
                                 {% elif r.status == 'approved' %}
-                                {% elif r.status == 'rejected' %}
-                                <span
-                                    style="padding:4px 8px;border-radius:6px;background:#f8d7da;color:#842029;font-size:13px;font-weight:600;">
-                                    Отклонено
-                                </span>
-                                <span
-                                    style="padding:4px 8px;border-radius:6px;background:#e6fffa;color:#065f46;font-size:13px;font-weight:600;">
+                                <span style="padding:4px 8px;border-radius:6px;background:#e6fffa;color:#065f46;font-size:13px;font-weight:600;">
                                     Назначено
                                 </span>
+
+                                {% elif r.status == 'rejected' %}
+                                <span style="padding:4px 8px;border-radius:6px;background:#f8d7da;color:#842029;font-size:13px;font-weight:600;">
+                                    Отклонено
+                                </span>
+
                                 {% else %}
-                                <span
-                                    style="padding:4px 8px;border-radius:6px;background:#e2e3e5;color:#383d41;font-size:13px;font-weight:600;">
+                                <span style="padding:4px 8px;border-radius:6px;background:#e2e3e5;color:#383d41;font-size:13px;font-weight:600;">
                                     Неизвестно
                                 </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if r.date %}
+                                    {{ r.date }} {{ r.time }}
+                                {% else %}
+                                    —
                                 {% endif %}
                             </td>
 
