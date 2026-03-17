@@ -248,6 +248,7 @@
 
             applyFilters();
             highlightRows();
+            highlightToday();
         }
 
         statusFilter.addEventListener("change", applyFilters);
@@ -255,6 +256,7 @@
         searchInput.addEventListener("input", applyFilters);
         applyFilters();
         highlightRows();
+        highlightToday();
 
         // ===== CSV (6) =====
         function exportCSV() {
@@ -371,6 +373,26 @@
             });
 
             rows.forEach(row => tbody.appendChild(row));
+
+        }
+
+        function highlightToday(){
+
+            const today = new Date().toISOString().split("T")[0];
+
+            document.querySelectorAll("tbody tr").forEach(row => {
+
+                const dateCell = row.children[5].innerText.trim();
+
+                if(dateCell === "—") return;
+
+                const rowDate = dateCell.split(" ")[0];
+
+                if(rowDate === today){
+                    row.style.border = "2px solid #0d6efd";
+                }
+
+            });
 
         }
     </script>
