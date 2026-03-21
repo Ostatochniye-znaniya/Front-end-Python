@@ -289,6 +289,14 @@ def calendar_page():
         schedule=SCHEDULE
     )
 
+@app.route("/admin")
+def admin_panel():
+    return render_template(
+        "admin.html",
+        role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD
+    )
+
 @app.route("/reject-request", methods=["POST"])
 def reject_request():
     data = request.get_json()
