@@ -43,6 +43,18 @@
 
 </form>
 
+<form method="post" action="/toggle-period" style="margin-top:20px;">
+
+<button class="btn">
+{% if is_edit_period %}
+Закрыть период
+{% else %}
+Открыть период
+{% endif %}
+</button>
+
+</form>
+
 </div>
 </div>
 </div>
