@@ -135,9 +135,22 @@ URL:
 ```bash
 cd project_root
 pip install flask
-python app.py
+python -m venv venv
 ```
 
+Для Windows:
+``` 
+venv\Scripts\activate
+```
+Для Linux:
+```
+source venv/bin/activate
+```
+
+```bash
+pip install -r requirements.txt
+python app.py
+```
 После запуска приложение будет доступно по адресу:
 
 http://127.0.0.1:5000
@@ -145,8 +158,16 @@ http://127.0.0.1:5000
 
 Доступные страницы:
 
-/foreign-request
+http://127.0.0.1:5000/foreign-request
 
-/incoming-requests
+http://127.0.0.1:5000/foreign-request
 
-/schedule
+http://127.0.0.1:5000/schedule
+
+http://127.0.0.1:5000/groups-selection
+
+http://127.0.0.1:5000/incoming-requests
+
+http://127.0.0.1:5000/analytics
+
+http://127.0.0.1:5000/calendar
