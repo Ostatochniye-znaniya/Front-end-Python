@@ -27,6 +27,22 @@
     {% endif %}
 </div>
 
+<!-- ПЕРЕКЛЮЧЕНИЕ РОЛИ -->
+<form method="post" action="/set-role" style="margin-top:20px;">
+
+<label>Выбрать роль:</label>
+
+<select name="role">
+    <option value="head">Заведующий</option>
+    <option value="faculty">Факультет</option>
+    <option value="teacher">Преподаватель</option>
+    <option value="guest">Гость</option>
+</select>
+
+<button class="btn">Применить</button>
+
+</form>
+
 </div>
 </div>
 </div>

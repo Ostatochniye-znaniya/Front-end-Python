@@ -297,6 +297,12 @@ def admin_panel():
         is_edit_period=IS_EDIT_PERIOD
     )
 
+@app.route("/set-role", methods=["POST"])
+def set_role():
+    global CURRENT_ROLE
+    CURRENT_ROLE = request.form.get("role")
+    return redirect(url_for("admin_panel"))
+
 @app.route("/reject-request", methods=["POST"])
 def reject_request():
     data = request.get_json()
