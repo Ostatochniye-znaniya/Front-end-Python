@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Статистика</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="wrapper">
+
+    <div class="card">
+        <div class="header">
+            <h1>Главная</h1>
+            <h2>Статистика по кафедре ИиИТ</h2>
+        </div>
+
+        <div class="filters">
+            <div class="filter">
+                <span>Семестр:</span>
+                <div class="select">Не выбрано ▾</div>
+            </div>
+            <div class="filter">
+                <span>Учебный год:</span>
+                <div class="select">Не выбрано ▾</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Направление</th>
+                    <th>Группа</th>
+                    <th>Дисциплины</th>
+                    <th>Электронный отчёт</th>
+                    <th>Замечания по электронному отчёту</th>
+                    <th>Бумажный отчёт</th>
+                    <th>Замечания по бумажному отчёту</th>
+                    <th>Всё сдано
+5</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ИСИТ</td>
+                    <td>231-332</td>
+                    <td>Дисциплина1, Дисциплина2</td>
+                    <td class="link">отчёт.docx</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>0</td>
+                    <td><span class="ok">✔</span></td>
+                </tr>
+                <tr>
+                    <td>ИСИТ</td>
+                    <td>221-333</td>
+                    <td>Дисциплина1, Дисциплина2</td>
+                    <td class="link">отчёт.docx</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>0</td>
+                    <td><span class="bad">✖</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <span>Групп: 9/20</span>
+            <span>Дисциплин: 18/30</span>
+            <span>Эл. отчётов: 9/9</span>
+            <span>Замечаний: 6</span>
+            <span>Бум. отчётов: 9/9</span>
+            <span>Сдано: 5/9</span>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

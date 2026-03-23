@@ -1,0 +1,111 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #bfc3ff;
+}
+
+/* Центровка */
+.wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Карточка */
+.card {
+    width: 1478px;
+    height: 819px;
+    background: #f5f5f5;
+    border-radius: 20px;
+    padding: 30px 40px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Заголовок */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+h1 {
+    font-size: 32px;
+    margin: 0;
+}
+
+h2 {
+    font-size: 28px;
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Фильтры */
+.filters {
+    display: flex;
+    gap: 40px;
+    margin: 30px 0;
+}
+
+.filter span {
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+.select {
+    display: inline-block;
+    background: #e0e0e0;
+    padding: 8px 15px;
+    border-radius: 10px;
+    color: #888;
+}
+
+/* Таблица */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #e9e9ef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px;
+    font-size: 14px;
+    text-align: center;
+}
+
+th {
+    background: #dcdce3;
+    font-weight: 600;
+}
+
+tbody tr:nth-child(even) {
+    background: #f2f2f7;
+}
+
+/* Ссылки */
+.link {
+    color: #4a6cff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Иконки */
+.ok {
+    color: blue;
+    font-weight: bold;
+}
+
+.bad {
+    color: red;
+    font-weight: bold;
+}
+
+/* Нижняя строка */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    font-size: 14px;
+}
