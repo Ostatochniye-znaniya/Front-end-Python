@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Московский политех - Выбор дисциплин</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        /* Шапка */
+        .header {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 0;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo h1 {
+            font-size: 20px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+        
+        .logo p {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-name {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Навигация */
+        .navigation {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-link {
+            padding: 12px 0;
+            font-size: 14px;
+            color: #666;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .nav-link.active {
+            color: #1a73e8;
+            border-bottom-color: #1a73e8;
+        }
+        
+        .nav-link:hover {
+            color: #1a73e8;
+        }
+        
+        /* Основной контент */
+        .main-content {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        /* Хлебные крошки */
+        .breadcrumb {
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .breadcrumb a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb span {
+            color: #999;
+        }
+        
+        /* Заголовок */
+        .page-title {
+            font-size: 24px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+        
+        /* Фильтры */
+        .filters-card {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .filter-item label {
+            color: #666;
+            font-weight: 400;
+        }
+        
+        .filter-item .value {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .filter-select {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        
+        /* Таблица */
+        .groups-table {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #fafafa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .table-header h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .collapse-btn {
+            background: none;
+            border: none;
+            font-size: 13px;
+            color: #1a73e8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .collapse-btn:hover {
+            text-decoration: underline;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            background-color: #fafafa;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover {
+            background-color: #fafafa;
+        }
+        
+        .group-name {
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+        
+        .detail-link {
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        
+        .detail-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Карточка деталей */
+        .details-card {
+            margin-top: 20px;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 20px;
+        }
+        
+        .details-row {
+            display: flex;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .details-label {
+            width: 200px;
+            color: #666;
+        }
+        
+        .details-value {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .edit-btn {
+            margin-top: 16px;
+            background: none;
+            border: 1px solid #1a73e8;
+            color: #1a73e8;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .edit-btn:hover {
+            background-color: #e8f0fe;
+        }
+        
+        /* Пагинация */
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .page-btn {
+            min-width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .page-btn:hover {
+            border-color: #1a73e8;
+            color: #1a73e8;
+        }
+        
+        .page-btn.active {
+            background-color: #1a73e8;
+            border-color: #1a73e8;
+            color: #fff;
+        }
+        
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .btn-primary {
+            background-color: #1a73e8;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1557b0;
+        }
+        
+        .btn-secondary {
+            background-color: #fff;
+            color: #666;
+            border: 1px solid #ddd;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* Список дисциплин в модалке */
+        .disciplines-section {
+            margin-bottom: 24px;
+        }
+        
+        .disciplines-section h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .disciplines-list {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .discipline-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .discipline-row:last-child {
+            border-bottom: none;
+        }
+        
+        .discipline-name {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .discipline-dept {
+            font-size: 12px;
+            color: #999;
+            margin-left: 8px;
+        }
+        
+        .remove-discipline {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .add-discipline {
+            background: none;
+            border: 1px solid #1a73e8;
+            color: #1a73e8;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .search-box button {
+            padding: 8px 16px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>Московский политех</h1>
+                <p>Проверка остаточных знаний</p>
+            </div>
+            <div class="user-info">
+                <span class="user-name">Иванов<br>Иван Иванович</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="navigation">
+        <div class="nav-content">
+            <a href="#" class="nav-link">Главная</a>
+            <a href="#" class="nav-link">Выбор групп</a>
+            <a href="#" class="nav-link active">Выбор дисциплин</a>
+            <a href="#" class="nav-link">Выбор преподавателей</a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="breadcrumb">
+            <a href="#">Главная</a> / <a href="#">Выбор групп</a> / <span>Выбор дисциплин</span>
+        </div>
+        
+        <h1 class="page-title">Выбор дисциплин</h1>
+        
+        <div class="filters-card">
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label>Факультет/институт:</label>
+                    <span class="value" id="selectedFaculty">Не выбрано</span>
+                </div>
+                <div class="filter-item">
+                    <label>Кафедра:</label>
+                    <span class="value" id="selectedDepartment">Не выбрано</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="groups-table">
+            <div class="table-header">
+                <h3>Группы</h3>
+                <button class="collapse-btn" id="collapseBtn">Свернуть ▲</button>
+            </div>
+            <div id="tableWrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Факультет</th>
+                            <th>Кафедра</th>
+                            <th>Группа</th>
+                        </tr>
+                    </thead>
+                    <tbody id="groupsTableBody">
+                        <tr>
+                            <td>ФИТ</td>
+                            <td>ИИИТ</td>
+                            <td class="group-name">241-331</td>
+                        </tr>
+                        <tr>
+                            <td>ФИТ</td>
+                            <td>ИИИТ</td>
+                            <td class="group-name">241-332</td>
+                        </tr>
+                        <tr>
+                            <td>ФИТ</td>
+                            <td>ИИИТ</td>
+                            <td class="group-name">241-333</td>
+                        </tr>
+                        <tr>
+                            <td>ФИТ</td>
+                            <td>ИИИТ</td>
+                            <td class="group-name">241-334</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="details-card" id="detailsCard" style="display: none;">
+            <div class="details-row">
+                <div class="details-label">Факультет/Институт:</div>
+                <div class="details-value" id="detailFaculty">ФИТ</div>
+            </div>
+            <div class="details-row">
+                <div class="details-label">Подразделение (Кафедра):</div>
+                <div class="details-value" id="detailDepartment">ИИИТ</div>
+            </div>
+            <div class="details-row">
+                <div class="details-label">Профиль/специализация:</div>
+                <div class="details-value" id="detailProfile">АСОИУ</div>
+            </div>
+            <div class="details-row">
+                <div class="details-label">Ответственный преподаватель:</div>
+                <div class="details-value" id="detailTeacher">Иванов И.И.</div>
+            </div>
+            <div class="details-row">
+                <div class="details-label">Группу по рекомендованию к проверке:</div>
+                <div class="details-value" id="detailRecommender">Иванов И.И.</div>
+            </div>
+            <button class="edit-btn" id="editDisciplinesBtn">Редактировать список дисциплин</button>
+        </div>
+        
+        <div class="pagination">
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">4</button>
+            <button class="page-btn">5</button>
+            <button class="page-btn">6</button>
+            <button class="page-btn">7</button>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast">✓ Изменения сохранены</div>
+    
+    <!-- Модальное окно -->
+    <div class="modal" id="disciplinesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Редактирование списка дисциплин</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="disciplines-section">
+                    <h4>Выбранные дисциплины</h4>
+                    <div class="disciplines-list" id="selectedList"></div>
+                </div>
+                <div class="disciplines-section">
+                    <h4>Добавить дисциплину</h4>
+                    <div class="search-box">
+                        <input type="text" id="disciplineSearch" placeholder="Поиск дисциплины...">
+                        <button onclick="searchDisciplines()">Найти</button>
+                    </div>
+                    <div class="disciplines-list" id="availableList"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Отмена</button>
+                <button class="btn-primary" onclick="saveDisciplines()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Данные групп
+        const groups = [
+            { name: '241-331', faculty: 'ФИТ', department: 'ИИИТ', profile: 'АСОИУ', teacher: 'Иванов И.И.', recommender: 'Иванов И.И.' },
+            { name: '241-332', faculty: 'ФИТ', department: 'ИИИТ', profile: 'АСОИУ', teacher: 'Иванов И.И.', recommender: 'Иванов И.И.' },
+            { name: '241-333', faculty: 'ФИТ', department: 'ИИИТ', profile: 'АСОИУ', teacher: 'Иванов И.И.', recommender: 'Иванов И.И.' },
+            { name: '241-334', faculty: 'ФИТ', department: 'ИИИТ', profile: 'АСОИУ', teacher: 'Иванов И.И.', recommender: 'Иванов И.И.' }
+        ];
+        
+        // Все доступные дисциплины
+        const allDisciplines = [
+            { id: 1, name: 'Математический анализ', department: 'ИИИТ' },
+            { id: 2, name: 'Прототипирование интерфейсов информационных систем', department: 'ИИИТ' },
+            { id: 3, name: 'Введение в программирование', department: 'ИИИТ' },
+            { id: 4, name: 'Офисные приложения', department: 'ИИИТ' },
+            { id: 5, name: 'Базы данных', department: 'ИИИТ' },
+            { id: 6, name: 'Веб-технологии', department: 'ИИИТ' },
+            { id: 7, name: 'Алгоритмы и структуры данных', department: 'ИИИТ' },
+            { id: 8, name: 'Операционные системы', department: 'ИИИТ' }
+        ];
+        
+        // Хранилище выбранных дисциплин для каждой группы
+        let groupDisciplines = {
+            '241-331': [1, 2, 3, 4],
+            '241-332': [1, 2],
+            '241-333': [],
+            '241-334': [3, 5]
+        };
+        
+        let currentGroup = null;
+        let currentSelected = [];
+        
+        // Обработка клика по группе
+        function handleGroupClick(groupName) {
+            const group = groups.find(g => g.name === groupName);
+            if (group) {
+                document.getElementById('detailFaculty').textContent = group.faculty;
+                document.getElementById('detailDepartment').textContent = group.department;
+                document.getElementById('detailProfile').textContent = group.profile;
+                document.getElementById('detailTeacher').textContent = group.teacher;
+                document.getElementById('detailRecommender').textContent = group.recommender;
+                document.getElementById('detailsCard').style.display = 'block';
+                currentGroup = groupName;
+            }
+        }
+        
+        // Открытие модального окна
+        function openModal() {
+            if (!currentGroup) {
+                showToast('Сначала выберите группу');
+                return;
+            }
+            
+            document.getElementById('modalTitle').innerHTML = `Редактирование списка дисциплин - ${currentGroup}`;
+            currentSelected = [...(groupDisciplines[currentGroup] || [])];
+            renderSelectedDisciplines();
+            renderAvailableDisciplines('');
+            document.getElementById('disciplinesModal').style.display = 'flex';
+        }
+        
+        // Отображение выбранных дисциплин
+        function renderSelectedDisciplines() {
+            const container = document.getElementById('selectedList');
+            const selected = allDisciplines.filter(d => currentSelected.includes(d.id));
+            
+            if (selected.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Дисциплины не выбраны</div>';
+                return;
+            }
+            
+            container.innerHTML = selected.map(d => `
+                <div class="discipline-row">
+                    <span>
+                        <span class="discipline-name">${d.name}</span>
+                        <span class="discipline-dept">(${d.department})</span>
+                    </span>
+                    <button class="remove-discipline" onclick="removeDiscipline(${d.id})">Удалить</button>
+                </div>
+            `).join('');
+        }
+        
+        // Поиск дисциплин
+        function searchDisciplines() {
+            const query = document.getElementById('disciplineSearch').value.toLowerCase();
+            renderAvailableDisciplines(query);
+        }
+        
+        // Отображение доступных дисциплин
+        function renderAvailableDisciplines(query) {
+            const container = document.getElementById('availableList');
+            let available = allDisciplines.filter(d => !currentSelected.includes(d.id));
+            
+            if (query) {
+                available = available.filter(d => d.name.toLowerCase().includes(query));
+            }
+            
+            if (available.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Дисциплины не найдены</div>';
+                return;
+            }
+            
+            container.innerHTML = available.map(d => `
+                <div class="discipline-row">
+                    <span>
+                        <span class="discipline-name">${d.name}</span>
+                        <span class="discipline-dept">(${d.department})</span>
+                    </span>
+                    <button class="add-discipline" onclick="addDiscipline(${d.id})">+ Добавить</button>
+                </div>
+            `).join('');
+        }
+        
+        // Добавление дисциплины
+        function addDiscipline(disciplineId) {
+            if (!currentSelected.includes(disciplineId)) {
+                currentSelected.push(disciplineId);
+                renderSelectedDisciplines();
+                renderAvailableDisciplines(document.getElementById('disciplineSearch').value);
+            }
+        }
+        
+        // Удаление дисциплины
+        function removeDiscipline(disciplineId) {
+            currentSelected = currentSelected.filter(id => id !== disciplineId);
+            renderSelectedDisciplines();
+            renderAvailableDisciplines(document.getElementById('disciplineSearch').value);
+        }
+        
+        // Сохранение дисциплин
+        function saveDisciplines() {
+            groupDisciplines[currentGroup] = [...currentSelected];
+            closeModal();
+            showToast('Дисциплины сохранены');
+        }
+        
+        function closeModal() {
+            document.getElementById('disciplinesModal').style.display = 'none';
+            document.getElementById('disciplineSearch').value = '';
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+        
+        // Сворачивание таблицы
+        let tableCollapsed = false;
+        document.getElementById('collapseBtn').addEventListener('click', function() {
+            const wrapper = document.getElementById('tableWrapper');
+            if (tableCollapsed) {
+                wrapper.style.display = 'block';
+                this.innerHTML = 'Свернуть ▲';
+            } else {
+                wrapper.style.display = 'none';
+                this.innerHTML = 'Развернуть ▼';
+            }
+            tableCollapsed = !tableCollapsed;
+        });
+        
+        // Добавляем обработчики на строки таблицы
+        function initTableClick() {
+            const rows = document.querySelectorAll('#groupsTableBody tr');
+            rows.forEach((row, index) => {
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', () => {
+                    rows.forEach(r => r.style.backgroundColor = '');
+                    row.style.backgroundColor = '#e8f0fe';
+                    const groupName = row.querySelector('.group-name').textContent;
+                    handleGroupClick(groupName);
+                });
+            });
+        }
+        
+        // Кнопка редактирования
+        document.getElementById('editDisciplinesBtn').addEventListener('click', openModal);
+        
+        // Инициализация
+        initTableClick();
+        
+        // Поиск по Enter
+        document.getElementById('disciplineSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchDisciplines();
+            }
+        });
+    </script>
+</body>
+</html>
