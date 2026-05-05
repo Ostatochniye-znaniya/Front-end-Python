@@ -123,11 +123,17 @@ def foreign_request():
         groups=GROUPS,
         disciplines=DISCIPLINES,
         subdivisions=SUBDIVISIONS,
+        role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD,
     )
 
 @app.route("/foreign-request/success")
 def foreign_request_success():
-    return render_template("foreign_request_success.html")
+    return render_template(
+        "foreign_request_success.html",
+        role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD,
+    )
 
 # ===================== 2.6 — Входящие заявки =====================
 
@@ -217,7 +223,9 @@ def incoming_requests():
     return render_template(
         "incoming_requests.html",
         requests=INCOMING_REQUESTS,
-        teachers=TEACHERS
+        teachers=TEACHERS,
+        role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD,
     )
 
 # ===================== 2.6 — График проверок =====================
@@ -271,6 +279,8 @@ def schedule_page():
         filter_group=filter_group,
         filter_disc=filter_disc,
         filter_teacher=filter_teacher,
+        role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD,
     )
 
 # ===================== 3.0 — Аналитика =====================
@@ -279,7 +289,9 @@ def schedule_page():
 def analytics_page():
     return render_template(
         "analytics.html",
-        requests=INCOMING_REQUESTS
+        requests=INCOMING_REQUESTS,
+        role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD,
     )
 
 # ===================== ЛПР — Рекомендательный список групп =====================
@@ -424,7 +436,9 @@ def faculty_confirm():
 def calendar_page():
     return render_template(
         "calendar.html",
-        schedule=SCHEDULE
+        schedule=SCHEDULE,
+        role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD,
     )
 
 @app.route("/admin")

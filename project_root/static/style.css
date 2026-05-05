@@ -372,3 +372,105 @@ select {
     transition: background 0.2s ease;
     cursor: pointer;
 }
+
+/* ===== Сайдбар ===== */
+.sidebar-layout {
+    align-items: flex-start;
+    justify-content: center;
+    gap: 24px;
+}
+
+.sidebar-layout .viewport {
+    flex: 1;
+    max-width: 1100px;
+}
+
+.sidebar {
+    width: 196px;
+    min-height: 600px;
+    background: var(--card-bg);
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(56, 68, 115, 0.12);
+    padding: 20px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.sidebar-logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+}
+
+.sidebar-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 10px 0 4px;
+    padding: 0 8px;
+}
+
+.sidebar a {
+    display: block;
+    padding: 9px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sidebar a:hover {
+    background: var(--muted);
+    color: var(--accent);
+}
+
+.sidebar a.active {
+    background: var(--muted);
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 10px 0;
+}
+
+/* ===== Бейджи статуса ===== */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-blue {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-yellow {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.badge-green {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-red {
+    background: #fee2e2;
+    color: #991b1b;
+}

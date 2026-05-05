@@ -1,131 +1,120 @@
-<!doctype html>
-<html lang="ru">
+{% extends "base.html" %}
+{% block title %}Рекомендательный список групп{% endblock %}
 
-<head>
-    <meta charset="utf-8">
-    <title>Рекомендательный список групп</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% block content %}
+<h1 class="h1">Рекомендательный список групп</h1>
 
-<body>
-<div class="stage">
-    <div class="viewport">
-        <div class="panel">
-
-            <h1 class="h1">Рекомендательный список групп</h1>
-
-            <!-- Фильтры (GET) -->
-            <form method="get" id="filter-form">
-                <div class="top-filters">
-                    <div class="filter-row">
-                        <div class="filter-item">
-                            <span class="filter-label">Факультет:</span>
-                            <div class="select">
-                                <select name="faculty" id="sel-faculty" onchange="this.form.submit()">
-                                    <option value="">Все</option>
-                                    {% for f in faculties %}
-                                    <option value="{{ f }}" {% if filter_faculty == f %}selected{% endif %}>{{ f }}</option>
-                                    {% endfor %}
-                                </select>
-                                <span class="caret">▾</span>
-                            </div>
-                        </div>
-                        <div class="filter-item">
-                            <span class="filter-label">Кафедра:</span>
-                            <div class="select">
-                                <select name="department" id="sel-dept" onchange="this.form.submit()">
-                                    <option value="">Все</option>
-                                    {% if filter_faculty and departments[filter_faculty] %}
-                                        {% for d in departments[filter_faculty] %}
-                                        <option value="{{ d }}" {% if filter_dept == d %}selected{% endif %}>{{ d }}</option>
-                                        {% endfor %}
-                                    {% else %}
-                                        {% for f_key, depts in departments.items() %}
-                                            {% for d in depts %}
-                                            <option value="{{ d }}" {% if filter_dept == d %}selected{% endif %}>{{ d }}</option>
-                                            {% endfor %}
-                                        {% endfor %}
-                                    {% endif %}
-                                </select>
-                                <span class="caret">▾</span>
-                            </div>
-                        </div>
-                    </div>
+<!-- Фильтры (GET) -->
+<form method="get" id="filter-form">
+    <div class="top-filters">
+        <div class="filter-row">
+            <div class="filter-item">
+                <span class="filter-label">Факультет:</span>
+                <div class="select">
+                    <select name="faculty" id="sel-faculty" onchange="this.form.submit()">
+                        <option value="">Все</option>
+                        {% for f in faculties %}
+                        <option value="{{ f }}" {% if filter_faculty == f %}selected{% endif %}>{{ f }}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="caret">▾</span>
                 </div>
-            </form>
-
-            <!-- Массовый выбор -->
-            {% if role == "head" and is_edit_period %}
-            <div style="display:flex;gap:10px;margin-bottom:16px;">
-                <button type="button" class="btn" onclick="selectAll()">Выбрать все</button>
-                <button type="button" class="btn" onclick="deselectAll()"
-                    style="background:#6b7280;">Снять все</button>
-                {% if filter_faculty %}
-                <button type="button" class="btn" onclick="selectAll()"
-                    style="background:#059669;">Выбрать все: {{ filter_faculty }}</button>
-                {% endif %}
             </div>
-            {% endif %}
-
-            <!-- Таблица + сохранение (POST) -->
-            <form method="post" action="{{ url_for('lpr_groups') }}">
-                <!-- Скрытые поля для групп вне фильтра — сохраняем их текущее состояние -->
-                {% set filtered_ids = groups | map(attribute='id') | list %}
-                {% for g in all_groups %}
-                    {% if g.id not in filtered_ids and g.in_list %}
-                    <input type="hidden" name="in_list_{{ g.id }}" value="on">
-                    {% endif %}
-                {% endfor %}
-
-                <div class="table-area">
-                    <table class="groups">
-                        <thead>
-                            <tr>
-                                <th>Группа</th>
-                                <th>Факультет</th>
-                                <th>Кафедра</th>
-                                <th>В рекомендательном списке</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for g in groups %}
-                            <tr class="{% if loop.index % 2 == 1 %}odd-row{% else %}even-row{% endif %}"
-                                data-faculty="{{ g.faculty }}">
-                                <td class="group-id">{{ g.name }}</td>
-                                <td>{{ g.faculty }}</td>
-                                <td>{{ g.department }}</td>
-                                <td class="center-cell">
-                                    <label class="square-toggle">
-                                        <input type="checkbox" name="in_list_{{ g.id }}"
-                                            {% if g.in_list %}checked{% endif %}
-                                            {% if role != "head" or not is_edit_period %}disabled{% endif %}>
-                                        <span class="sq">
-                                            <svg class="icon-check" viewBox="0 0 24 24">
-                                                <path fill="#fff" d="M20.285 6.709l-11.285 11.29-5.285-5.29 1.414-1.414 3.871 3.876 9.871-9.882z"/>
-                                            </svg>
-                                            <svg class="icon-cross" viewBox="0 0 24 24">
-                                                <path fill="#fff" d="M18.3 5.71l-1-1L12 9l-5.3-4.29-1 1L11 10l-5.3 4.29 1 1L12 11l5.3 4.29 1-1L13 10z"/>
-                                            </svg>
-                                        </span>
-                                    </label>
-                                </td>
-                            </tr>
+            <div class="filter-item">
+                <span class="filter-label">Кафедра:</span>
+                <div class="select">
+                    <select name="department" id="sel-dept" onchange="this.form.submit()">
+                        <option value="">Все</option>
+                        {% if filter_faculty and departments[filter_faculty] %}
+                            {% for d in departments[filter_faculty] %}
+                            <option value="{{ d }}" {% if filter_dept == d %}selected{% endif %}>{{ d }}</option>
                             {% endfor %}
-                        </tbody>
-                    </table>
+                        {% else %}
+                            {% for f_key, depts in departments.items() %}
+                                {% for d in depts %}
+                                <option value="{{ d }}" {% if filter_dept == d %}selected{% endif %}>{{ d }}</option>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                    <span class="caret">▾</span>
                 </div>
-
-                <div class="action">
-                    <button class="btn" type="submit"
-                        {% if role != "head" or not is_edit_period %}disabled{% endif %}>
-                        Сохранить
-                    </button>
-                </div>
-            </form>
-
+            </div>
         </div>
     </div>
+</form>
+
+<!-- Массовый выбор -->
+{% if role == "head" and is_edit_period %}
+<div style="display:flex;gap:10px;margin-bottom:16px;">
+    <button type="button" class="btn" onclick="selectAll()">Выбрать все</button>
+    <button type="button" class="btn" onclick="deselectAll()"
+        style="background:#6b7280;">Снять все</button>
+    {% if filter_faculty %}
+    <button type="button" class="btn" onclick="selectAll()"
+        style="background:#059669;">Выбрать все: {{ filter_faculty }}</button>
+    {% endif %}
 </div>
+{% endif %}
+
+<!-- Таблица + сохранение (POST) -->
+<form method="post" action="{{ url_for('lpr_groups') }}">
+    <!-- Скрытые поля для групп вне фильтра — сохраняем их текущее состояние -->
+    {% set filtered_ids = groups | map(attribute='id') | list %}
+    {% for g in all_groups %}
+        {% if g.id not in filtered_ids and g.in_list %}
+        <input type="hidden" name="in_list_{{ g.id }}" value="on">
+        {% endif %}
+    {% endfor %}
+
+    <div class="table-area">
+        <table class="groups">
+            <thead>
+                <tr>
+                    <th>Группа</th>
+                    <th>Факультет</th>
+                    <th>Кафедра</th>
+                    <th>В рекомендательном списке</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in groups %}
+                <tr class="{% if loop.index % 2 == 1 %}odd-row{% else %}even-row{% endif %}"
+                    data-faculty="{{ g.faculty }}">
+                    <td class="group-id">{{ g.name }}</td>
+                    <td>{{ g.faculty }}</td>
+                    <td>{{ g.department }}</td>
+                    <td class="center-cell">
+                        <label class="square-toggle">
+                            <input type="checkbox" name="in_list_{{ g.id }}"
+                                {% if g.in_list %}checked{% endif %}
+                                {% if role != "head" or not is_edit_period %}disabled{% endif %}>
+                            <span class="sq">
+                                <svg class="icon-check" viewBox="0 0 24 24">
+                                    <path fill="#fff" d="M20.285 6.709l-11.285 11.29-5.285-5.29 1.414-1.414 3.871 3.876 9.871-9.882z"/>
+                                </svg>
+                                <svg class="icon-cross" viewBox="0 0 24 24">
+                                    <path fill="#fff" d="M18.3 5.71l-1-1L12 9l-5.3-4.29-1 1L11 10l-5.3 4.29 1 1L12 11l5.3 4.29 1-1L13 10z"/>
+                                </svg>
+                            </span>
+                        </label>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="action">
+        <button class="btn" type="submit"
+            {% if role != "head" or not is_edit_period %}disabled{% endif %}>
+            Сохранить
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
 <script>
 function selectAll() {
     document.querySelectorAll('input[name^="in_list_"]').forEach(cb => cb.checked = true);
@@ -134,5 +123,4 @@ function deselectAll() {
     document.querySelectorAll('input[name^="in_list_"]').forEach(cb => cb.checked = false);
 }
 </script>
-</body>
-</html>
+{% endblock %}

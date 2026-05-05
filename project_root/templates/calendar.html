@@ -1,207 +1,92 @@
-<!doctype html>
-<html lang="ru">
+{% extends "base.html" %}
+{% block title %}Календарь проверок{% endblock %}
 
-<head>
-<meta charset="utf-8">
-<title>Календарь проверок</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-
-<body>
-
-<div class="stage">
-<div class="viewport">
-<div class="panel">
-
+{% block content %}
 <h1 class="h1">Календарь проверок</h1>
-<!-- ФИЛЬТР ПО ПРЕПОДАВАТЕЛЮ -->
 
 <div style="margin-top:20px;margin-bottom:20px;">
-
-<label>Фильтр по преподавателю:</label>
-
-<select id="teacherFilter" style="margin-left:10px;padding:6px;">
-<option value="all">Все преподаватели</option>
-</select>
-
+    <label>Фильтр по преподавателю:</label>
+    <select id="teacherFilter" style="margin-left:10px;padding:6px;">
+        <option value="all">Все преподаватели</option>
+    </select>
 </div>
+
 <table class="groups">
-
-<thead>
-<tr>
-<th>Дата</th>
-<th>Группа</th>
-<th>Дисциплина</th>
-<th>Преподаватель</th>
-<th>Статус</th>
-</tr>
-</thead>
-
-<tbody>
-
-{% for s in schedule %}
-
-<tr data-teacher="{{ s.teacher }}" onclick="openModal(
-'{{ s.date }}',
-'{{ s.group }}',
-'{{ s.discipline }}',
-'{{ s.teacher }}',
-'{{ s.status }}'
-)">
-
-<td>{{ s.date }}</td>
-<td>{{ s.group }}</td>
-<td>{{ s.discipline }}</td>
-<td>{{ s.teacher }}</td>
-
-<td>
-
-{% if s.status == "confirmed" %}
-
-<span style="
-padding:4px 8px;
-border-radius:6px;
-background:#e6fffa;
-color:#065f46;
-font-size:13px;
-font-weight:600;
-">
-Назначено
-</span>
-
-{% elif s.status == "planned" %}
-
-<span style="
-padding:4px 8px;
-border-radius:6px;
-background:#fff3cd;
-color:#856404;
-font-size:13px;
-font-weight:600;
-">
-Планируется
-</span>
-
-{% else %}
-
-<span style="
-padding:4px 8px;
-border-radius:6px;
-background:#e2e3e5;
-color:#383d41;
-font-size:13px;
-font-weight:600;
-">
-{{ s.status }}
-</span>
-
-{% endif %}
-
-</td>
-
-</tr>
-
-{% endfor %}
-
-</tbody>
-
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Группа</th>
+            <th>Дисциплина</th>
+            <th>Преподаватель</th>
+            <th>Статус</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in schedule %}
+        <tr data-teacher="{{ s.teacher }}" onclick="openModal(
+            '{{ s.date }}','{{ s.group }}','{{ s.discipline }}','{{ s.teacher }}','{{ s.status }}'
+        )">
+            <td>{{ s.date }}</td>
+            <td>{{ s.group }}</td>
+            <td>{{ s.discipline }}</td>
+            <td>{{ s.teacher }}</td>
+            <td>
+                {% if s.status == "confirmed" %}
+                <span class="badge badge-green">Назначено</span>
+                {% elif s.status == "planned" %}
+                <span class="badge badge-yellow">Планируется</span>
+                {% else %}
+                <span class="badge" style="background:#e2e3e5;color:#383d41;">{{ s.status }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
+{% endblock %}
 
-</div>
-</div>
-</div>
-
-
-<!-- МОДАЛКА -->
+{% block modals %}
 <div id="modal" class="modal hidden">
-
-<div class="modal-content">
-
-<h2>Детали проверки</h2>
-
-<p><b>Дата:</b> <span id="m_date"></span></p>
-<p><b>Группа:</b> <span id="m_group"></span></p>
-<p><b>Дисциплина:</b> <span id="m_disc"></span></p>
-<p><b>Преподаватель:</b> <span id="m_teacher"></span></p>
-<p><b>Статус:</b> <span id="m_status"></span></p>
-
-<button class="btn" onclick="closeModal()">Закрыть</button>
-
+    <div class="modal-content">
+        <h2>Детали проверки</h2>
+        <p><b>Дата:</b> <span id="m_date"></span></p>
+        <p><b>Группа:</b> <span id="m_group"></span></p>
+        <p><b>Дисциплина:</b> <span id="m_disc"></span></p>
+        <p><b>Преподаватель:</b> <span id="m_teacher"></span></p>
+        <p><b>Статус:</b> <span id="m_status"></span></p>
+        <button class="btn" onclick="closeModal()">Закрыть</button>
+    </div>
 </div>
+{% endblock %}
 
-</div>
-
-
+{% block scripts %}
 <script>
-
-function openModal(date, group, disc, teacher, status){
-
-document.getElementById("m_date").innerText = date;
-document.getElementById("m_group").innerText = group;
-document.getElementById("m_disc").innerText = disc;
-document.getElementById("m_teacher").innerText = teacher;
-document.getElementById("m_status").innerText = status;
-
-document.getElementById("modal").classList.remove("hidden");
-
+function openModal(date, group, disc, teacher, status) {
+    document.getElementById("m_date").innerText = date;
+    document.getElementById("m_group").innerText = group;
+    document.getElementById("m_disc").innerText = disc;
+    document.getElementById("m_teacher").innerText = teacher;
+    document.getElementById("m_status").innerText = status;
+    document.getElementById("modal").classList.remove("hidden");
 }
-
-function closeModal(){
-
-document.getElementById("modal").classList.add("hidden");
-
+function closeModal() {
+    document.getElementById("modal").classList.add("hidden");
 }
-
-// ======================
-// ФИЛЬТР ПО ПРЕПОДАВАТЕЛЮ
-// ======================
 
 const teacherFilter = document.getElementById("teacherFilter");
-
 const teachers = new Set();
-
-document.querySelectorAll("tbody tr").forEach(row => {
-
-const teacher = row.dataset.teacher;
-
-teachers.add(teacher);
-
-});
-
+document.querySelectorAll("tbody tr").forEach(row => teachers.add(row.dataset.teacher));
 teachers.forEach(t => {
-
-const option = document.createElement("option");
-
-option.value = t;
-option.textContent = t;
-
-teacherFilter.appendChild(option);
-
+    const option = document.createElement("option");
+    option.value = t;
+    option.textContent = t;
+    teacherFilter.appendChild(option);
 });
-
 teacherFilter.addEventListener("change", () => {
-
-const selected = teacherFilter.value;
-
-document.querySelectorAll("tbody tr").forEach(row => {
-
-if(selected === "all"){
-
-row.style.display = "";
-
-}else{
-
-row.style.display = row.dataset.teacher === selected
-? ""
-: "none";
-
-}
-
-});
-
+    const selected = teacherFilter.value;
+    document.querySelectorAll("tbody tr").forEach(row => {
+        row.style.display = selected === "all" || row.dataset.teacher === selected ? "" : "none";
+    });
 });
 </script>
-
-</body>
-</html>
+{% endblock %}

@@ -1,17 +1,7 @@
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <title>Панель администратора</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% extends "base.html" %}
+{% block title %}Панель администратора{% endblock %}
 
-<body>
-
-<div class="stage">
-<div class="viewport">
-<div class="panel">
-
+{% block content %}
 <h1 class="h1">Панель администратора</h1>
 
 <div style="margin-top:20px;">
@@ -27,37 +17,20 @@
     {% endif %}
 </div>
 
-<!-- ПЕРЕКЛЮЧЕНИЕ РОЛИ -->
 <form method="post" action="/set-role" style="margin-top:20px;">
-
-<label>Выбрать роль:</label>
-
-<select name="role">
-    <option value="head">Заведующий</option>
-    <option value="faculty">Факультет</option>
-    <option value="teacher">Преподаватель</option>
-    <option value="guest">Гость</option>
-</select>
-
-<button class="btn">Применить</button>
-
+    <label>Выбрать роль:</label>
+    <select name="role">
+        <option value="head" {% if role == "head" %}selected{% endif %}>Заведующий кафедрой</option>
+        <option value="faculty" {% if role == "faculty" %}selected{% endif %}>Ответственный факультета</option>
+        <option value="teacher" {% if role == "teacher" %}selected{% endif %}>Преподаватель</option>
+        <option value="guest" {% if role == "guest" %}selected{% endif %}>Гость</option>
+    </select>
+    <button class="btn" style="margin-left:10px;">Применить</button>
 </form>
 
 <form method="post" action="/toggle-period" style="margin-top:20px;">
-
-<button class="btn">
-{% if is_edit_period %}
-Закрыть период
-{% else %}
-Открыть период
-{% endif %}
-</button>
-
+    <button class="btn">
+        {% if is_edit_period %}Закрыть период{% else %}Открыть период{% endif %}
+    </button>
 </form>
-
-</div>
-</div>
-</div>
-
-</body>
-</html>
+{% endblock %}

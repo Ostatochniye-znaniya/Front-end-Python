@@ -1,104 +1,90 @@
-<!doctype html>
-<html lang="ru">
+{% extends "base.html" %}
+{% block title %}График проверок факультета{% endblock %}
 
-<head>
-    <meta charset="utf-8">
-    <title>График проверок факультета</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% block content %}
+<h1 class="h1">График проверок факультета</h1>
 
-<body>
-<div class="stage">
-    <div class="viewport">
-        <div class="panel">
+{% if not is_edit_period %}
+<div style="margin-bottom:16px;padding:12px;background:#fdecea;color:#611a15;border-radius:6px;">
+    Период редактирования закрыт. Доступен только просмотр данных.
+</div>
+{% endif %}
 
-            <h1 class="h1">График проверок факультета</h1>
-
-            {% if not is_edit_period %}
-            <div style="margin-bottom:16px;padding:12px;background:#fdecea;color:#611a15;border-radius:6px;">
-                Период редактирования закрыт. Доступен только просмотр данных.
-            </div>
-            {% endif %}
-
-            <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-                <a href="{{ url_for('faculty_preview') }}" class="btn">
-                    Сформировать график →
-                </a>
-            </div>
-
-            <div class="table-area">
-                <table class="groups">
-                    <thead>
-                        <tr>
-                            <th>Группа</th>
-                            <th>Дисциплина</th>
-                            <th>Статус</th>
-                            <th>Преподаватель</th>
-                            <th>Дата</th>
-                            <th>Время</th>
-                            <th>Действие</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for c in checks %}
-                        <tr class="{% if loop.index % 2 == 1 %}odd-row{% else %}even-row{% endif %}
-                            {% if not c.date or not c.time %} row-error{% endif %}">
-                            <td class="group-id">{{ c.group }}</td>
-                            <td>{{ c.discipline }}</td>
-                            <td class="center-cell">
-                                {% if c.status == "own" %}
-                                <span class="badge badge-blue">Своя кафедра</span>
-                                {% else %}
-                                <span class="badge badge-yellow">Чужой факультет</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ c.teacher or '—' }}</td>
-                            <td>{{ c.date or '—' }}</td>
-                            <td>{{ c.time or '—' }}</td>
-                            <td class="center-cell">
-                                {% if is_edit_period and role == "faculty" %}
-                                <button type="button" class="btn"
-                                    style="padding:4px 12px;font-size:12px;"
-                                    onclick="showEdit({{ c.id }})">Изменить</button>
-                                {% else %}
-                                    {% if c.confirmed %}
-                                    <span style="color:#059669;font-weight:600;">✓ Утверждено</span>
-                                    {% else %}—{% endif %}
-                                {% endif %}
-                            </td>
-                        </tr>
-
-                        {% if is_edit_period and role == "faculty" %}
-                        <tr id="edit-row-{{ c.id }}" style="display:none;background:#f0f4ff;">
-                            <td colspan="7">
-                                <form method="post"
-                                    style="display:flex;align-items:center;gap:14px;padding:10px 20px;flex-wrap:wrap;">
-                                    <input type="hidden" name="check_id" value="{{ c.id }}">
-                                    <span class="filter-label">Дата:</span>
-                                    <input class="date-input" type="date" name="date"
-                                        value="{{ c.date or '' }}" style="width:140px;">
-                                    <span class="filter-label">Время:</span>
-                                    <input class="time-input" type="time" name="time"
-                                        value="{{ c.time or '' }}" style="width:100px;">
-                                    <button class="btn" type="submit"
-                                        style="padding:6px 18px;">Сохранить</button>
-                                    <button class="btn" type="button"
-                                        onclick="hideEdit({{ c.id }})"
-                                        style="padding:6px 14px;background:#6b7280;">Отмена</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endif %}
-
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-    </div>
+<div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+    <a href="{{ url_for('faculty_preview') }}" class="btn">
+        Сформировать график →
+    </a>
 </div>
 
+<div class="table-area">
+    <table class="groups">
+        <thead>
+            <tr>
+                <th>Группа</th>
+                <th>Дисциплина</th>
+                <th>Статус</th>
+                <th>Преподаватель</th>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in checks %}
+            <tr class="{% if loop.index % 2 == 1 %}odd-row{% else %}even-row{% endif %}{% if not c.date or not c.time %} row-error{% endif %}">
+                <td class="group-id">{{ c.group }}</td>
+                <td>{{ c.discipline }}</td>
+                <td class="center-cell">
+                    {% if c.status == "own" %}
+                    <span class="badge badge-blue">Своя кафедра</span>
+                    {% else %}
+                    <span class="badge badge-yellow">Чужой факультет</span>
+                    {% endif %}
+                </td>
+                <td>{{ c.teacher or '—' }}</td>
+                <td>{{ c.date or '—' }}</td>
+                <td>{{ c.time or '—' }}</td>
+                <td class="center-cell">
+                    {% if is_edit_period and role == "faculty" %}
+                    <button type="button" class="btn"
+                        style="padding:4px 12px;font-size:12px;"
+                        onclick="showEdit({{ c.id }})">Изменить</button>
+                    {% else %}
+                        {% if c.confirmed %}
+                        <span style="color:#059669;font-weight:600;">✓ Утверждено</span>
+                        {% else %}—{% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% if is_edit_period and role == "faculty" %}
+            <tr id="edit-row-{{ c.id }}" style="display:none;background:#f0f4ff;">
+                <td colspan="7">
+                    <form method="post"
+                        style="display:flex;align-items:center;gap:14px;padding:10px 20px;flex-wrap:wrap;">
+                        <input type="hidden" name="check_id" value="{{ c.id }}">
+                        <span class="filter-label">Дата:</span>
+                        <input class="date-input" type="date" name="date"
+                            value="{{ c.date or '' }}" style="width:140px;">
+                        <span class="filter-label">Время:</span>
+                        <input class="time-input" type="time" name="time"
+                            value="{{ c.time or '' }}" style="width:100px;">
+                        <button class="btn" type="submit" style="padding:6px 18px;">Сохранить</button>
+                        <button class="btn" type="button"
+                            onclick="hideEdit({{ c.id }})"
+                            style="padding:6px 14px;background:#6b7280;">Отмена</button>
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
+
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script>
 function showEdit(id) {
     document.getElementById('edit-row-' + id).style.display = '';
@@ -107,5 +93,4 @@ function hideEdit(id) {
     document.getElementById('edit-row-' + id).style.display = 'none';
 }
 </script>
-</body>
-</html>
+{% endblock %}

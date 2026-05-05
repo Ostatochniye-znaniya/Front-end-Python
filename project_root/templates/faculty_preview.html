@@ -1,80 +1,64 @@
-<!doctype html>
-<html lang="ru">
+{% extends "base.html" %}
+{% block title %}Предпросмотр графика{% endblock %}
 
-<head>
-    <meta charset="utf-8">
-    <title>Предпросмотр графика</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% block content %}
+<h1 class="h1">Предпросмотр графика</h1>
 
-<body>
-<div class="stage">
-    <div class="viewport">
-        <div class="panel">
-
-            <h1 class="h1">Предпросмотр графика</h1>
-
-            {% if incomplete %}
-            <div style="margin-bottom:20px;padding:14px 18px;background:#fdecea;color:#611a15;
-                border-radius:8px;border-left:4px solid #ef4444;">
-                <b>Внимание:</b> {{ incomplete | length }} строк без даты или времени.
-                Утверждение возможно только после заполнения всех полей.
-                <ul style="margin:8px 0 0 16px;">
-                    {% for c in incomplete %}
-                    <li>{{ c.group }} — {{ c.discipline }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-
-            <div class="table-area">
-                <table class="groups">
-                    <thead>
-                        <tr>
-                            <th>Группа</th>
-                            <th>Дисциплина</th>
-                            <th>Статус</th>
-                            <th>Преподаватель</th>
-                            <th>Дата</th>
-                            <th>Время</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for c in checks %}
-                        <tr class="{% if loop.index % 2 == 1 %}odd-row{% else %}even-row{% endif %}
-                            {% if not c.date or not c.time %} row-error{% endif %}">
-                            <td class="group-id">{{ c.group }}</td>
-                            <td>{{ c.discipline }}</td>
-                            <td class="center-cell">
-                                {% if c.status == "own" %}
-                                <span class="badge badge-blue">Своя кафедра</span>
-                                {% else %}
-                                <span class="badge badge-yellow">Чужой факультет</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ c.teacher or '—' }}</td>
-                            <td>{{ c.date or '—' }}</td>
-                            <td>{{ c.time or '—' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="action" style="gap:16px;display:flex;justify-content:center;margin-top:24px;">
-                <form method="post" action="{{ url_for('faculty_confirm') }}">
-                    <button class="btn" type="submit" {% if incomplete %}disabled{% endif %}>
-                        Утвердить график
-                    </button>
-                </form>
-                <a href="{{ url_for('faculty_schedule') }}" class="btn"
-                    style="background:#6b7280;text-decoration:none;">
-                    ← Вернуться к редактированию
-                </a>
-            </div>
-
-        </div>
-    </div>
+{% if incomplete %}
+<div style="margin-bottom:20px;padding:14px 18px;background:#fdecea;color:#611a15;
+    border-radius:8px;border-left:4px solid #ef4444;">
+    <b>Внимание:</b> {{ incomplete | length }} строк без даты или времени.
+    Утверждение возможно только после заполнения всех полей.
+    <ul style="margin:8px 0 0 16px;">
+        {% for c in incomplete %}
+        <li>{{ c.group }} — {{ c.discipline }}</li>
+        {% endfor %}
+    </ul>
 </div>
-</body>
-</html>
+{% endif %}
+
+<div class="table-area">
+    <table class="groups">
+        <thead>
+            <tr>
+                <th>Группа</th>
+                <th>Дисциплина</th>
+                <th>Статус</th>
+                <th>Преподаватель</th>
+                <th>Дата</th>
+                <th>Время</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in checks %}
+            <tr class="{% if loop.index % 2 == 1 %}odd-row{% else %}even-row{% endif %}{% if not c.date or not c.time %} row-error{% endif %}">
+                <td class="group-id">{{ c.group }}</td>
+                <td>{{ c.discipline }}</td>
+                <td class="center-cell">
+                    {% if c.status == "own" %}
+                    <span class="badge badge-blue">Своя кафедра</span>
+                    {% else %}
+                    <span class="badge badge-yellow">Чужой факультет</span>
+                    {% endif %}
+                </td>
+                <td>{{ c.teacher or '—' }}</td>
+                <td>{{ c.date or '—' }}</td>
+                <td>{{ c.time or '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div style="display:flex;gap:16px;justify-content:center;margin-top:24px;">
+    <form method="post" action="{{ url_for('faculty_confirm') }}">
+        <button class="btn" type="submit" {% if incomplete %}disabled{% endif %}>
+            Утвердить график
+        </button>
+    </form>
+    <a href="{{ url_for('faculty_schedule') }}" class="btn"
+        style="background:#6b7280;text-decoration:none;">
+        ← Вернуться к редактированию
+    </a>
+</div>
+{% endblock %}

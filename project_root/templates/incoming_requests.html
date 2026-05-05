@@ -1,428 +1,278 @@
-<!doctype html>
-<html lang="ru">
+{% extends "base.html" %}
+{% block title %}Входящие заявки{% endblock %}
 
-<head>
-    <meta charset="utf-8">
-    <title>Входящие заявки (2.6)</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% block content %}
+<h1 class="h1">Входящие заявки</h1>
 
-<body>
-
-    <div class="stage">
-        <div class="viewport">
-            <div class="panel">
-
-                <h1 class="h1">Входящие заявки (2.6)</h1>
-
-                <!-- МИНИ-ДАШБОРД (ЗАДАЧА 5) -->
-                <div style="display:flex;gap:16px;margin-bottom:16px;">
-                    <div style="padding:12px 16px;border-radius:8px;background:#e2e3e5;">
-                        <div style="font-size:12px;color:#555;">Всего заявок</div>
-                        <div id="cnt-all" style="font-size:22px;font-weight:700;">0</div>
-                    </div>
-                    <div style="padding:12px 16px;border-radius:8px;background:#fff3cd;">
-                        <div style="font-size:12px;color:#856404;">Ожидают назначения</div>
-                        <div id="cnt-requested" style="font-size:22px;font-weight:700;">0</div>
-                    </div>
-                    <div style="padding:12px 16px;border-radius:8px;background:#e6fffa;">
-                        <div style="font-size:12px;color:#065f46;">Назначено</div>
-                        <div id="cnt-approved" style="font-size:22px;font-weight:700;">0</div>
-                    </div>
-                </div>
-
-                <!-- ФИЛЬТРЫ + ЭКСПОРТ (4 + 6) -->
-                <div>
-                    <label>Поиск:</label><br>
-                    <input id="search-input" type="text" placeholder="Группа или дисциплина" style="padding:6px;">
-                </div>
-                <div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-end;">
-                    <div>
-                        <label>Статус:</label><br>
-                        <select id="filter-status">
-                            <option value="all">Все</option>
-                            <option value="requested">Ожидает назначения</option>
-                            <option value="approved">Назначено</option>
-                            <option value="rejected">Отклонено</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label>Подразделение:</label><br>
-                        <select id="filter-subdivision">
-                            <option value="all">Все</option>
-                            {% for r in requests %}
-                            <option value="{{ r.from_subdivision }}">{{ r.from_subdivision }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button class="btn" type="button" onclick="sortByDate()">
-                        Сортировать по дате
-                    </button>
-                    <div style="margin-left:auto;">
-                        <button class="btn" type="button" onclick="exportCSV()">
-                            Экспорт CSV
-                        </button>
-                    </div>
-                </div>
-                <div style="margin-bottom:10px;font-size:14px;">
-                    Найдено заявок: <b id="found-count">0</b>
-                </div>
-                <table class="groups">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>От подразделения</th>
-                            <th>Группа</th>
-                            <th>Дисциплина</th>
-                            <th>Статус</th>
-                            <th>Дата назначения</th>
-                            <th>Действие</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr id="empty-row" style="display:none;">
-                            <td colspan="7" style="text-align:center;padding:20px;color:#777;">
-                                Нет данных для отображения
-                            </td>
-                        </tr>
-                        {% for r in requests %}
-                        <tr data-status="{{ r.status }}" data-subdivision="{{ r.from_subdivision }}">
-                            <td>{{ r.id }}</td>
-                            <td>{{ r.from_subdivision }}</td>
-                            <td>{{ r.group }}</td>
-                            <td>{{ r.discipline }}</td>
-
-                            <td>
-                                {% if r.status == 'requested' %}
-                                <span style="padding:4px 8px;border-radius:6px;background:#fff3cd;color:#856404;font-size:13px;font-weight:600;">
-                                    Ожидает назначения
-                                </span>
-
-                                {% elif r.status == 'approved' %}
-                                <span style="padding:4px 8px;border-radius:6px;background:#e6fffa;color:#065f46;font-size:13px;font-weight:600;">
-                                    Назначено
-                                </span>
-
-                                {% elif r.status == 'rejected' %}
-                                <span style="padding:4px 8px;border-radius:6px;background:#f8d7da;color:#842029;font-size:13px;font-weight:600;">
-                                    Отклонено
-                                </span>
-
-                                {% else %}
-                                <span style="padding:4px 8px;border-radius:6px;background:#e2e3e5;color:#383d41;font-size:13px;font-weight:600;">
-                                    Неизвестно
-                                </span>
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                {% if r.date %}
-                                    {{ r.date }} {{ r.time }}
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                {% if r.status == 'requested' %}
-                                <button class="btn" onclick="openModal({{ r.id }})">
-                                    Открыть
-                                </button>
-                                {% else %}
-                                ✔ Обработано
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-
-                <!-- AUDIT-LIGHT (ЗАДАЧА 7) -->
-                <div style="margin-top:24px;">
-                    <h2 style="font-size:18px;margin-bottom:8px;">История действий</h2>
-                    <div id="audit-log"
-                        style="max-height:160px;overflow:auto;background:#f8f9fa;border-radius:6px;padding:8px;font-size:13px;">
-                    </div>
-                </div>
-
-            </div>
-        </div>
+<!-- Мини-дашборд -->
+<div style="display:flex;gap:16px;margin-bottom:16px;">
+    <div style="padding:12px 16px;border-radius:8px;background:#e2e3e5;">
+        <div style="font-size:12px;color:#555;">Всего заявок</div>
+        <div id="cnt-all" style="font-size:22px;font-weight:700;">0</div>
     </div>
-
-    <!-- МОДАЛКА -->
-    <div id="modal" class="modal hidden">
-        <div class="modal-content">
-
-            <h2>Обработка заявки</h2>
-
-            <form method="post" id="approve-form">
-
-                <input type="hidden" name="request_id" id="modal_request_id">
-
-                <label>Назначить преподавателя:</label>
-                <select name="teacher" required>
-                    <option value="">Выберите...</option>
-                    {% for t in teachers %}
-                    <option value="{{ t.id }}">{{ t.name }}</option>
-                    {% endfor %}
-                </select>
-
-                <label>Дата проведения:</label>
-                <input type="date" name="date" required>
-
-                <label>Время проведения:</label>
-                <input type="time" name="time" required>
-
-                <button class="btn" type="submit">Утвердить</button>
-
-                <button class="btn" type="button" onclick="rejectRequest()" style="background:#dc3545;color:white;">
-                    Отклонить
-                </button>
-
-                <button class="btn" type="button" onclick="closeModal()">Закрыть</button>
-
-            </form>
-        </div>
+    <div style="padding:12px 16px;border-radius:8px;background:#fff3cd;">
+        <div style="font-size:12px;color:#856404;">Ожидают назначения</div>
+        <div id="cnt-requested" style="font-size:22px;font-weight:700;">0</div>
     </div>
+    <div style="padding:12px 16px;border-radius:8px;background:#e6fffa;">
+        <div style="font-size:12px;color:#065f46;">Назначено</div>
+        <div id="cnt-approved" style="font-size:22px;font-weight:700;">0</div>
+    </div>
+</div>
 
-    <!-- JS: всё предыдущее + AUDIT -->
-    <script>
-        function openModal(id) {
-            document.getElementById("modal_request_id").value = id;
-            document.getElementById("modal").classList.remove("hidden");
-            addAudit(`Открыта заявка ID ${id}`);
-        }
+<!-- Фильтры + экспорт -->
+<div>
+    <label>Поиск:</label><br>
+    <input id="search-input" type="text" placeholder="Группа или дисциплина" style="padding:6px;">
+</div>
+<div style="display:flex;gap:16px;margin-bottom:16px;align-items:flex-end;">
+    <div>
+        <label>Статус:</label><br>
+        <select id="filter-status">
+            <option value="all">Все</option>
+            <option value="requested">Ожидает назначения</option>
+            <option value="approved">Назначено</option>
+            <option value="rejected">Отклонено</option>
+        </select>
+    </div>
+    <div>
+        <label>Подразделение:</label><br>
+        <select id="filter-subdivision">
+            <option value="all">Все</option>
+            {% for r in requests %}
+            <option value="{{ r.from_subdivision }}">{{ r.from_subdivision }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button class="btn" type="button" onclick="sortByDate()">Сортировать по дате</button>
+    <div style="margin-left:auto;">
+        <button class="btn" type="button" onclick="exportCSV()">Экспорт CSV</button>
+    </div>
+</div>
+<div style="margin-bottom:10px;font-size:14px;">
+    Найдено заявок: <b id="found-count">0</b>
+</div>
 
-        function closeModal() {
-            document.getElementById("modal").classList.add("hidden");
-        }
+<table class="groups">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>От подразделения</th>
+            <th>Группа</th>
+            <th>Дисциплина</th>
+            <th>Статус</th>
+            <th>Дата назначения</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr id="empty-row" style="display:none;">
+            <td colspan="7" style="text-align:center;padding:20px;color:#777;">
+                Нет данных для отображения
+            </td>
+        </tr>
+        {% for r in requests %}
+        <tr data-status="{{ r.status }}" data-subdivision="{{ r.from_subdivision }}">
+            <td>{{ r.id }}</td>
+            <td>{{ r.from_subdivision }}</td>
+            <td>{{ r.group }}</td>
+            <td>{{ r.discipline }}</td>
+            <td>
+                {% if r.status == 'requested' %}
+                <span class="badge badge-yellow">Ожидает назначения</span>
+                {% elif r.status == 'approved' %}
+                <span class="badge badge-green">Назначено</span>
+                {% elif r.status == 'rejected' %}
+                <span class="badge badge-red">Отклонено</span>
+                {% else %}
+                <span class="badge" style="background:#e2e3e5;color:#383d41;">Неизвестно</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if r.date %}{{ r.date }} {{ r.time }}{% else %}—{% endif %}
+            </td>
+            <td>
+                {% if r.status == 'requested' %}
+                <button class="btn" onclick="openModal({{ r.id }})">Открыть</button>
+                {% else %}
+                ✔ Обработано
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-        const statusFilter = document.getElementById("filter-status");
-        const searchInput = document.getElementById("search-input");
-        const subdivisionFilter = document.getElementById("filter-subdivision");
+<!-- История действий -->
+<div style="margin-top:24px;">
+    <h2 style="font-size:18px;margin-bottom:8px;">История действий</h2>
+    <div id="audit-log"
+        style="max-height:160px;overflow:auto;background:#f8f9fa;border-radius:6px;padding:8px;font-size:13px;">
+    </div>
+</div>
+{% endblock %}
 
-        const cntAll = document.getElementById("cnt-all");
-        const cntRequested = document.getElementById("cnt-requested");
-        const cntApproved = document.getElementById("cnt-approved");
-        const foundCount = document.getElementById("found-count");
-        const emptyRow = document.getElementById("empty-row");
-        function updateCounters() {
-            let all = 0, requested = 0, approved = 0, rejected = 0;
+{% block modals %}
+<div id="modal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Обработка заявки</h2>
+        <form method="post" id="approve-form">
+            <input type="hidden" name="request_id" id="modal_request_id">
+            <label>Назначить преподавателя:</label>
+            <select name="teacher" required>
+                <option value="">Выберите...</option>
+                {% for t in teachers %}
+                <option value="{{ t.id }}">{{ t.name }}</option>
+                {% endfor %}
+            </select>
+            <label>Дата проведения:</label>
+            <input type="date" name="date" required>
+            <label>Время проведения:</label>
+            <input type="time" name="time" required>
+            <button class="btn" type="submit">Утвердить</button>
+            <button class="btn" type="button" onclick="rejectRequest()"
+                style="background:#dc3545;color:white;">Отклонить</button>
+            <button class="btn" type="button" onclick="closeModal()">Закрыть</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
 
-            document.querySelectorAll("tbody tr").forEach(row => {
-                if (row.style.display === "none") return;
+{% block scripts %}
+<script>
+    function openModal(id) {
+        document.getElementById("modal_request_id").value = id;
+        document.getElementById("modal").classList.remove("hidden");
+        addAudit(`Открыта заявка ID ${id}`);
+    }
+    function closeModal() {
+        document.getElementById("modal").classList.add("hidden");
+    }
 
-                all++;
+    const statusFilter = document.getElementById("filter-status");
+    const searchInput = document.getElementById("search-input");
+    const subdivisionFilter = document.getElementById("filter-subdivision");
+    const cntAll = document.getElementById("cnt-all");
+    const cntRequested = document.getElementById("cnt-requested");
+    const cntApproved = document.getElementById("cnt-approved");
+    const foundCount = document.getElementById("found-count");
+    const emptyRow = document.getElementById("empty-row");
 
-                if (row.dataset.status === "requested") requested++;
-                if (row.dataset.status === "approved") approved++;
-                if (row.dataset.status === "rejected") rejected++;
-            });
+    function updateCounters() {
+        let all = 0, requested = 0, approved = 0;
+        document.querySelectorAll("tbody tr").forEach(row => {
+            if (row.style.display === "none" || row.id === "empty-row") return;
+            all++;
+            if (row.dataset.status === "requested") requested++;
+            if (row.dataset.status === "approved") approved++;
+        });
+        cntAll.textContent = all;
+        cntRequested.textContent = requested;
+        cntApproved.textContent = approved;
+        foundCount.textContent = all;
+    }
 
-            cntAll.textContent = all;
-            cntRequested.textContent = requested;
-            cntApproved.textContent = approved;
-
-            foundCount.textContent = all;
-        }
-
-        function applyFilters() {
-            const status = statusFilter.value;
-            const subdivision = subdivisionFilter.value;
-            const search = searchInput.value.toLowerCase();
-
-            document.querySelectorAll("tbody tr").forEach(row => {
-                if (row.id === "empty-row") return;
-
-                const rowStatus = row.dataset.status;
-                const rowSubdivision = row.dataset.subdivision;
-
-                const group = row.children[2].innerText.toLowerCase();
-                const discipline = row.children[3].innerText.toLowerCase();
-
-                let visible = true;
-
-                if (status !== "all" && rowStatus !== status) visible = false;
-                if (subdivision !== "all" && rowSubdivision !== subdivision) visible = false;
-
-                if (search && !(group.includes(search) || discipline.includes(search))) {
-                    visible = false;
-                }
-
-                row.style.display = visible ? "" : "none";
-            });
-
-            updateCounters();
-            highlightRows();
-            highlightToday();
-
-            // empty state
-            let visibleCount = 0;
-
-            document.querySelectorAll("tbody tr").forEach(row => {
-                if (row.id === "empty-row") return;
-                if (row.style.display !== "none") visibleCount++;
-            });
-
-            emptyRow.style.display = visibleCount === 0 ? "" : "none";
-        }
-
-        statusFilter.addEventListener("change", applyFilters);
-        subdivisionFilter.addEventListener("change", applyFilters);
-        searchInput.addEventListener("input", applyFilters);
-        applyFilters();
+    function applyFilters() {
+        const status = statusFilter.value;
+        const subdivision = subdivisionFilter.value;
+        const search = searchInput.value.toLowerCase();
+        document.querySelectorAll("tbody tr").forEach(row => {
+            if (row.id === "empty-row") return;
+            let visible = true;
+            if (status !== "all" && row.dataset.status !== status) visible = false;
+            if (subdivision !== "all" && row.dataset.subdivision !== subdivision) visible = false;
+            const group = row.children[2]?.innerText.toLowerCase() || "";
+            const discipline = row.children[3]?.innerText.toLowerCase() || "";
+            if (search && !(group.includes(search) || discipline.includes(search))) visible = false;
+            row.style.display = visible ? "" : "none";
+        });
+        updateCounters();
         highlightRows();
         highlightToday();
-
-        // ===== CSV (6) =====
-        function exportCSV() {
-            addAudit("Экспорт CSV");
-
-            const rows = [];
-            rows.push(["ID", "Подразделение", "Группа", "Дисциплина", "Статус", "Дата"].join(";"));
-
-            document.querySelectorAll("tbody tr").forEach(row => {
-                if (row.style.display === "none") return;
-
-                const cols = row.querySelectorAll("td");
-                const statusText = cols[4].innerText.trim();
-
-                rows.push([
-                    cols[0].innerText.trim(),
-                    cols[1].innerText.trim(),
-                    cols[2].innerText.trim(),
-                    cols[3].innerText.trim(),
-                    statusText,
-                    cols[5].innerText.trim()
-                ].join(";"));
-            });
-
-            const csvContent = "\uFEFF" + rows.join("\n");
-            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "incoming_requests.csv";
-            a.click();
-
-            URL.revokeObjectURL(url);
-        }
-
-        // ===== AUDIT-LIGHT (7) =====
-        const AUDIT_KEY = "incoming_requests_audit";
-
-        function addAudit(text) {
-            const log = JSON.parse(localStorage.getItem(AUDIT_KEY) || "[]");
-            const ts = new Date().toLocaleString();
-            log.unshift(`[${ts}] ${text}`);
-            localStorage.setItem(AUDIT_KEY, JSON.stringify(log.slice(0, 50)));
-            renderAudit();
-        }
-
-        function renderAudit() {
-            const box = document.getElementById("audit-log");
-            const log = JSON.parse(localStorage.getItem(AUDIT_KEY) || "[]");
-            box.innerHTML = log.map(l => `<div>${l}</div>`).join("");
-        }
-
-        document.getElementById("approve-form").addEventListener("submit", function () {
-            const id = document.getElementById("modal_request_id").value;
-            addAudit(`Утверждена заявка ID ${id}`);
+        let visibleCount = 0;
+        document.querySelectorAll("tbody tr").forEach(row => {
+            if (row.id !== "empty-row" && row.style.display !== "none") visibleCount++;
         });
+        emptyRow.style.display = visibleCount === 0 ? "" : "none";
+    }
 
+    statusFilter.addEventListener("change", applyFilters);
+    subdivisionFilter.addEventListener("change", applyFilters);
+    searchInput.addEventListener("input", applyFilters);
+    applyFilters();
+
+    function exportCSV() {
+        addAudit("Экспорт CSV");
+        const rows = [["ID","Подразделение","Группа","Дисциплина","Статус","Дата"].join(";")];
+        document.querySelectorAll("tbody tr").forEach(row => {
+            if (row.style.display === "none" || row.id === "empty-row") return;
+            const cols = row.querySelectorAll("td");
+            rows.push([cols[0],cols[1],cols[2],cols[3],cols[4],cols[5]]
+                .map(c => c.innerText.trim()).join(";"));
+        });
+        const blob = new Blob(["\uFEFF" + rows.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "incoming_requests.csv"; a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    const AUDIT_KEY = "incoming_requests_audit";
+    function addAudit(text) {
+        const log = JSON.parse(localStorage.getItem(AUDIT_KEY) || "[]");
+        log.unshift(`[${new Date().toLocaleString()}] ${text}`);
+        localStorage.setItem(AUDIT_KEY, JSON.stringify(log.slice(0, 50)));
         renderAudit();
+    }
+    function renderAudit() {
+        const box = document.getElementById("audit-log");
+        const log = JSON.parse(localStorage.getItem(AUDIT_KEY) || "[]");
+        box.innerHTML = log.map(l => `<div>${l}</div>`).join("");
+    }
+    document.getElementById("approve-form").addEventListener("submit", function () {
+        addAudit(`Утверждена заявка ID ${document.getElementById("modal_request_id").value}`);
+    });
+    renderAudit();
 
-        function rejectRequest(){
+    function rejectRequest() {
+        const id = document.getElementById("modal_request_id").value;
+        fetch("/reject-request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ request_id: parseInt(id) })
+        }).then(() => { addAudit(`Отклонена заявка ID ${id}`); location.reload(); });
+    }
 
-            const id = document.getElementById("modal_request_id").value;
+    function highlightRows() {
+        document.querySelectorAll("tbody tr").forEach(row => {
+            row.style.background = "";
+            if (row.dataset.status === "requested") row.style.background = "#fff8e1";
+            if (row.dataset.status === "rejected") row.style.background = "#fdecea";
+        });
+    }
 
-            fetch("/reject-request", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ request_id: parseInt(id) })
-            }).then(() => {
-                addAudit(`Отклонена заявка ID ${id}`);
-                location.reload();
-            });
+    function sortByDate() {
+        const tbody = document.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr")).filter(r => r.id !== "empty-row");
+        rows.sort((a, b) => {
+            const da = a.children[5]?.innerText.trim();
+            const db = b.children[5]?.innerText.trim();
+            if (!da || da === "—") return 1;
+            if (!db || db === "—") return -1;
+            return new Date(da) - new Date(db);
+        });
+        rows.forEach(row => tbody.appendChild(row));
+    }
 
-        }
-
-        function highlightRows(){
-
-            document.querySelectorAll("tbody tr").forEach(row => {
-
-                const status = row.dataset.status;
-
-                // сброс
-                row.style.background = "";
-
-                if(status === "requested"){
-                    row.style.background = "#fff8e1"; // светло-жёлтый
-                }
-
-                if(status === "rejected"){
-                    row.style.background = "#fdecea"; // светло-красный
-                }
-
-            });
-
-        }
-
-        function sortByDate() {
-
-            const tbody = document.querySelector("tbody");
-
-            const rows = Array.from(tbody.querySelectorAll("tr"))
-                .filter(row => row.id !== "empty-row");
-
-            rows.sort((a, b) => {
-
-                const dateA = a.children[5]?.innerText.trim();
-                const dateB = b.children[5]?.innerText.trim();
-
-                if (!dateA || dateA === "—") return 1;
-                if (!dateB || dateB === "—") return -1;
-
-                return new Date(dateA) - new Date(dateB);
-            });
-
-            rows.forEach(row => tbody.appendChild(row));
-
-        }
-
-        function highlightToday(){
-
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-
-            const todayStr = `${yyyy}-${mm}-${dd}`;
-
-            document.querySelectorAll("tbody tr").forEach(row => {
-
-                if (!row.children[5]) return;
-
-                const dateCell = row.children[5].innerText.trim();
-
-                if(dateCell === "—") return;
-
-                const rowDate = dateCell.split(" ")[0];
-
-                if(rowDate === todayStr){
-                    row.style.border = "2px solid #0d6efd";
-                }
-
-            });
-
-        }
-    </script>
-
-</body>
-
-</html>
+    function highlightToday() {
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        document.querySelectorAll("tbody tr").forEach(row => {
+            if (!row.children[5]) return;
+            const dateCell = row.children[5].innerText.trim();
+            if (dateCell === "—") return;
+            if (dateCell.split(" ")[0] === todayStr) row.style.border = "2px solid #0d6efd";
+        });
+    }
+</script>
+{% endblock %}
