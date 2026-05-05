@@ -404,6 +404,22 @@ def faculty_schedule():
         is_edit_period=IS_EDIT_PERIOD,
     )
 
+@app.route("/faculty-schedule/preview")
+def faculty_preview():
+    incomplete = [c for c in FACULTY_CHECKS if not c["date"] or not c["time"]]
+    return render_template(
+        "faculty_preview.html",
+        checks=FACULTY_CHECKS,
+        incomplete=incomplete,
+        role=CURRENT_ROLE,
+    )
+
+@app.route("/faculty-schedule/confirm", methods=["POST"])
+def faculty_confirm():
+    for c in FACULTY_CHECKS:
+        c["confirmed"] = True
+    return redirect(url_for("faculty_schedule"))
+
 @app.route("/calendar")
 def calendar_page():
     return render_template(
