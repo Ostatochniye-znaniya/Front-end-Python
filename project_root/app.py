@@ -331,6 +331,79 @@ def lpr_groups():
         is_edit_period=IS_EDIT_PERIOD,
     )
 
+# ===================== График факультета =====================
+
+FACULTY_CHECKS = [
+    {
+        "id": 1,
+        "group": "221-321",
+        "discipline": "Веб-разработка",
+        "status": "own",
+        "teacher": "Иванов И.И.",
+        "date": "2025-06-22",
+        "time": "12:00",
+        "confirmed": False,
+    },
+    {
+        "id": 2,
+        "group": "221-322",
+        "discipline": "Базы данных",
+        "status": "own",
+        "teacher": "Верещагин В.Ю.",
+        "date": "",
+        "time": "",
+        "confirmed": False,
+    },
+    {
+        "id": 3,
+        "group": "231-411",
+        "discipline": "Экономика",
+        "status": "foreign",
+        "teacher": "Петрова А.А.",
+        "date": "2025-07-01",
+        "time": "10:00",
+        "confirmed": False,
+    },
+    {
+        "id": 4,
+        "group": "221-323",
+        "discipline": "ОИБ",
+        "status": "own",
+        "teacher": "Иванов И.И.",
+        "date": "",
+        "time": "",
+        "confirmed": False,
+    },
+    {
+        "id": 5,
+        "group": "241-511",
+        "discipline": "Математическое моделирование",
+        "status": "foreign",
+        "teacher": "",
+        "date": "2025-06-28",
+        "time": "14:00",
+        "confirmed": False,
+    },
+]
+
+@app.route("/faculty-schedule", methods=["GET", "POST"])
+def faculty_schedule():
+    if request.method == "POST" and CURRENT_ROLE == "faculty":
+        check_id = int(request.form.get("check_id"))
+        for c in FACULTY_CHECKS:
+            if c["id"] == check_id:
+                c["date"] = request.form.get("date", c["date"])
+                c["time"] = request.form.get("time", c["time"])
+                break
+        return redirect(url_for("faculty_schedule"))
+
+    return render_template(
+        "faculty_schedule.html",
+        checks=FACULTY_CHECKS,
+        role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD,
+    )
+
 @app.route("/calendar")
 def calendar_page():
     return render_template(
