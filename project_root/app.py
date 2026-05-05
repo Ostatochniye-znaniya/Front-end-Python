@@ -282,6 +282,55 @@ def analytics_page():
         requests=INCOMING_REQUESTS
     )
 
+# ===================== ЛПР — Рекомендательный список групп =====================
+
+LPR_GROUPS = [
+    {"id": "221-321", "faculty": "ФИТ", "department": "ИиИТ", "name": "221-321", "in_list": False},
+    {"id": "221-322", "faculty": "ФИТ", "department": "ИиИТ", "name": "221-322", "in_list": True},
+    {"id": "221-323", "faculty": "ФИТ", "department": "ИБ",   "name": "221-323", "in_list": False},
+    {"id": "221-324", "faculty": "ФИТ", "department": "ИБ",   "name": "221-324", "in_list": True},
+    {"id": "231-411", "faculty": "ФБК", "department": "ЭиФ",  "name": "231-411", "in_list": False},
+    {"id": "231-412", "faculty": "ФБК", "department": "ЭиФ",  "name": "231-412", "in_list": True},
+    {"id": "231-413", "faculty": "ФБК", "department": "ЭиФ",  "name": "231-413", "in_list": False},
+    {"id": "241-511", "faculty": "ФММ", "department": "ПМ",   "name": "241-511", "in_list": False},
+    {"id": "241-512", "faculty": "ФММ", "department": "ПМ",   "name": "241-512", "in_list": True},
+]
+
+FACULTIES = ["ФИТ", "ФБК", "ФММ"]
+DEPARTMENTS = {
+    "ФИТ": ["ИиИТ", "ИБ"],
+    "ФБК": ["ЭиФ"],
+    "ФММ": ["ПМ"],
+}
+
+@app.route("/lpr-groups", methods=["GET", "POST"])
+def lpr_groups():
+    if request.method == "POST" and CURRENT_ROLE == "head" and IS_EDIT_PERIOD:
+        for g in LPR_GROUPS:
+            g["in_list"] = bool(request.form.get(f"in_list_{g['id']}"))
+        return redirect(url_for("lpr_groups"))
+
+    filter_faculty = request.args.get("faculty", "")
+    filter_dept = request.args.get("department", "")
+
+    filtered = [
+        g for g in LPR_GROUPS
+        if (not filter_faculty or g["faculty"] == filter_faculty)
+        and (not filter_dept or g["department"] == filter_dept)
+    ]
+
+    return render_template(
+        "lpr_groups.html",
+        groups=filtered,
+        all_groups=LPR_GROUPS,
+        faculties=FACULTIES,
+        departments=DEPARTMENTS,
+        filter_faculty=filter_faculty,
+        filter_dept=filter_dept,
+        role=CURRENT_ROLE,
+        is_edit_period=IS_EDIT_PERIOD,
+    )
+
 @app.route("/calendar")
 def calendar_page():
     return render_template(
