@@ -54,6 +54,19 @@
                 </div>
             </form>
 
+            <!-- Массовый выбор -->
+            {% if role == "head" and is_edit_period %}
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <button type="button" class="btn" onclick="selectAll()">Выбрать все</button>
+                <button type="button" class="btn" onclick="deselectAll()"
+                    style="background:#6b7280;">Снять все</button>
+                {% if filter_faculty %}
+                <button type="button" class="btn" onclick="selectAll()"
+                    style="background:#059669;">Выбрать все: {{ filter_faculty }}</button>
+                {% endif %}
+            </div>
+            {% endif %}
+
             <!-- Таблица + сохранение (POST) -->
             <form method="post" action="{{ url_for('lpr_groups') }}">
                 <!-- Скрытые поля для групп вне фильтра — сохраняем их текущее состояние -->
@@ -113,5 +126,13 @@
         </div>
     </div>
 </div>
+<script>
+function selectAll() {
+    document.querySelectorAll('input[name^="in_list_"]').forEach(cb => cb.checked = true);
+}
+function deselectAll() {
+    document.querySelectorAll('input[name^="in_list_"]').forEach(cb => cb.checked = false);
+}
+</script>
 </body>
 </html>
