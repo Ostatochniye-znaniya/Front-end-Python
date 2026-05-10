@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('oz-theme')||'light');</script>
+    <script defer src="{{ url_for('static', filename='theme.js') }}"></script>
     {% block head %}{% endblock %}
 </head>
 
@@ -72,6 +74,13 @@
                 class="{% if request.path == '/admin' %}active{% endif %}">
                 ⚙ Администратор
             </a>
+            <div class="sidebar-divider"></div>
+            <div class="theme-toggle">
+                <span class="theme-toggle-label">Тёмная тема</span>
+                <button class="theme-switch" id="themeSwitch" type="button" aria-label="Переключить тему">
+                    <span class="theme-switch-thumb"></span>
+                </button>
+            </div>
         </div>
     </nav>
 
