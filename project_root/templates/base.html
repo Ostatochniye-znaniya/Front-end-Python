@@ -14,61 +14,65 @@
 <div class="stage sidebar-layout">
 
     <nav class="sidebar">
-        <div class="sidebar-logo">МП</div>
+        <div class="sidebar-top">
+            <div class="sidebar-logo">Проверка остаточных знаний</div>
 
-        {% if role == "head" %}
-        <div class="sidebar-title">Заведующий кафедрой</div>
-        <a href="{{ url_for('groups_selection') }}"
-            class="{% if request.path == '/groups-selection' %}active{% endif %}">
-            Выбор групп
-        </a>
-        <a href="{{ url_for('lpr_groups') }}"
-            class="{% if request.path == '/lpr-groups' %}active{% endif %}">
-            Рекоменд. список
-        </a>
-        <a href="{{ url_for('foreign_request') }}"
-            class="{% if request.path == '/foreign-request' %}active{% endif %}">
-            Заявка на факультет
-        </a>
-        {% endif %}
+            {% if role == "head" %}
+            <div class="sidebar-title">Заведующий кафедрой</div>
+            <a href="{{ url_for('groups_selection') }}"
+                class="{% if request.path == '/groups-selection' %}active{% endif %}">
+                Выбор групп
+            </a>
+            <a href="{{ url_for('lpr_groups') }}"
+                class="{% if request.path == '/lpr-groups' %}active{% endif %}">
+                Рекоменд. список
+            </a>
+            <a href="{{ url_for('foreign_request') }}"
+                class="{% if request.path == '/foreign-request' %}active{% endif %}">
+                Заявка на факультет
+            </a>
+            {% endif %}
 
-        {% if role == "faculty" %}
-        <div class="sidebar-title">Ответственный факультета</div>
-        <a href="{{ url_for('faculty_schedule') }}"
-            class="{% if '/faculty-schedule' in request.path %}active{% endif %}">
-            График факультета
-        </a>
-        <a href="{{ url_for('incoming_requests') }}"
-            class="{% if request.path == '/incoming-requests' %}active{% endif %}">
-            Входящие заявки
-        </a>
-        {% endif %}
+            {% if role == "faculty" %}
+            <div class="sidebar-title">Ответственный факультета</div>
+            <a href="{{ url_for('faculty_schedule') }}"
+                class="{% if '/faculty-schedule' in request.path %}active{% endif %}">
+                График факультета
+            </a>
+            <a href="{{ url_for('incoming_requests') }}"
+                class="{% if request.path == '/incoming-requests' %}active{% endif %}">
+                Входящие заявки
+            </a>
+            {% endif %}
 
-        {% if role == "teacher" %}
-        <div class="sidebar-title">Преподаватель</div>
-        <a href="{{ url_for('schedule_page') }}"
-            class="{% if request.path == '/schedule' %}active{% endif %}">
-            График проверок
-        </a>
-        <a href="{{ url_for('calendar_page') }}"
-            class="{% if request.path == '/calendar' %}active{% endif %}">
-            Календарь
-        </a>
-        {% endif %}
+            {% if role == "teacher" %}
+            <div class="sidebar-title">Преподаватель</div>
+            <a href="{{ url_for('schedule_page') }}"
+                class="{% if request.path == '/schedule' %}active{% endif %}">
+                График проверок
+            </a>
+            <a href="{{ url_for('calendar_page') }}"
+                class="{% if request.path == '/calendar' %}active{% endif %}">
+                Календарь
+            </a>
+            {% endif %}
 
-        {% if role == "guest" %}
-        <div class="sidebar-title">Гость</div>
-        <a href="{{ url_for('analytics_page') }}"
-            class="{% if request.path == '/analytics' %}active{% endif %}">
-            Аналитика
-        </a>
-        {% endif %}
+            {% if role == "guest" %}
+            <div class="sidebar-title">Гость</div>
+            <a href="{{ url_for('analytics_page') }}"
+                class="{% if request.path == '/analytics' %}active{% endif %}">
+                Аналитика
+            </a>
+            {% endif %}
+        </div>
 
-        <div class="sidebar-divider"></div>
-        <a href="{{ url_for('admin_panel') }}"
-            class="{% if request.path == '/admin' %}active{% endif %}">
-            ⚙ Администратор
-        </a>
+        <div class="sidebar-bottom">
+            <div class="sidebar-divider"></div>
+            <a href="{{ url_for('admin_panel') }}"
+                class="{% if request.path == '/admin' %}active{% endif %}">
+                ⚙ Администратор
+            </a>
+        </div>
     </nav>
 
     <div class="viewport">

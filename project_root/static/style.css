@@ -40,21 +40,22 @@ body {
 }
 
 .panel {
-    width: 1100px;
-    min-height: 700px;
-    /* чтобы первая страница осталась высокой */
+    width: 100%;
+    min-height: calc(100vh - 40px);
     background: var(--card-bg);
-    border-radius: 18px;
-    box-shadow: 0 12px 30px rgba(56, 68, 115, 0.12);
-    padding: 28px 36px;
+    border-radius: 24px;
+    box-shadow: 0 8px 28px rgba(56, 68, 115, 0.10);
+    padding: 32px 40px;
     overflow: auto;
 }
 
 .panel-small {
     width: 600px;
-    min-height: 250px;
+    max-width: 100%;
+    min-height: auto;
     height: auto;
     overflow: visible;
+    margin: 0 auto;
 }
 
 
@@ -376,35 +377,56 @@ select {
 /* ===== Сайдбар ===== */
 .sidebar-layout {
     align-items: flex-start;
-    justify-content: center;
-    gap: 24px;
+    justify-content: flex-start;
+    padding: 20px 24px;
+    min-height: 100vh;
+    gap: 28px;
 }
 
 .sidebar-layout .viewport {
     flex: 1;
-    max-width: 1100px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: calc(100vh - 40px);
 }
 
 .sidebar {
-    width: 196px;
-    min-height: 600px;
+    width: 260px;
+    height: calc(100vh - 40px);
     background: var(--card-bg);
-    border-radius: 18px;
-    box-shadow: 0 12px 30px rgba(56, 68, 115, 0.12);
-    padding: 20px 14px;
+    border-radius: 28px;
+    box-shadow: 0 8px 28px rgba(56, 68, 115, 0.10);
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+}
+
+.sidebar-top {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-bottom {
     flex-shrink: 0;
+    padding-top: 4px;
 }
 
 .sidebar-logo {
-    font-size: 20px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--accent);
-    text-align: center;
-    margin-bottom: 12px;
-    letter-spacing: 0.05em;
+    text-align: left;
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    padding: 0 8px;
 }
 
 .sidebar-title {
@@ -419,8 +441,8 @@ select {
 
 .sidebar a {
     display: block;
-    padding: 9px 12px;
-    border-radius: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
     text-decoration: none;
     color: #374151;
     font-size: 13px;
@@ -442,7 +464,7 @@ select {
 .sidebar-divider {
     height: 1px;
     background: var(--border-color);
-    margin: 10px 0;
+    margin: 8px 0;
 }
 
 /* ===== Бейджи статуса ===== */
@@ -473,4 +495,61 @@ select {
 .badge-red {
     background: #fee2e2;
     color: #991b1b;
+}
+
+/* ===== Адаптивность ===== */
+@media (max-width: 900px) {
+    .sidebar-layout {
+        flex-direction: column;
+        padding: 16px;
+        gap: 16px;
+        min-height: auto;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        border-radius: 18px;
+        position: static;
+        padding: 18px 16px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sidebar-top {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        overflow-y: visible;
+    }
+
+    .sidebar-bottom {
+        padding-top: 0;
+    }
+
+    .sidebar-divider {
+        display: none;
+    }
+
+    .sidebar-logo {
+        margin-bottom: 0;
+        margin-right: 16px;
+    }
+
+    .sidebar-title {
+        display: none;
+    }
+
+    .sidebar-layout .viewport {
+        min-height: auto;
+        width: 100%;
+    }
+
+    .panel {
+        min-height: auto;
+        border-radius: 18px;
+        padding: 24px 20px;
+    }
 }
