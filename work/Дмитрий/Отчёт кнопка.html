@@ -1,0 +1,280 @@
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse
+from django.urls import reverse
+from django.db import models
+from django.utils import timezone
+import csv
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+import json
+
+def teacher_dashboard(request):
+    """Страница преподавателя со списком назначенных проверок"""
+    # Здесь получите ваши назначенные проверки из БД
+    # Пример для демонстрации:
+    class FakeAssignment:
+        def __init__(self, id, title, course, status):
+            self.id = id
+            self.title = title
+            self.course = course
+            self.status = status
+            self.submission_count = 15
+    
+    assigned_checks = [
+        FakeAssignment(1, "Лабораторная работа №1", "Программирование", "На проверке"),
+        FakeAssignment(2, "Курсовая работа", "Базы данных", "Проверено 50%"),
+        FakeAssignment(3, "Тестирование", "Web-разработка", "Ожидает"),
+    ]
+    
+    for check in assigned_checks:
+        check.report_url = reverse('generate_report', args=[check.id])
+    
+    return render(request, 'teacher_dashboard.html', {
+        'assigned_checks': assigned_checks,
+        'teacher_name': "Иван Петрович",
+    })
+
+def generate_report(request, assignment_id):
+    """Генерация отчёта по заданию"""
+    # Здесь получите данные из БД
+    # Пример для демонстрации:
+    assignment = {"id": assignment_id, "title": f"Задание #{assignment_id}", "course": "Курс"}
+    submissions = [
+        {"student_name": "Анна Смирнова", "student_email": "anna@mail.ru", 
+         "submitted_at": timezone.now(), "grade": 85, "teacher_comment": "Отлично!"},
+        {"student_name": "Иван Петров", "student_email": "ivan@mail.ru", 
+         "submitted_at": timezone.now(), "grade": 45, "teacher_comment": "Доработать"},
+        {"student_name": "Мария Сидорова", "student_email": "maria@mail.ru", 
+         "submitted_at": timezone.now(), "grade": None, "teacher_comment": ""},
+    ]
+    
+    report_format = request.GET.get('format', 'html')
+    
+    # HTML отчёт
+    if report_format == 'html':
+        return render(request, 'report.html', {
+            'assignment': assignment,
+            'submissions': submissions,
+            'total_submissions': len(submissions),
+            'avg_grade': sum(s['grade'] for s in submissions if s['grade']) / len([s for s in submissions if s['grade']]) if any(s['grade'] for s in submissions) else 0,
+            'passed_count': len([s for s in submissions if s['grade'] and s['grade'] >= 60]),
+            'failed_count': len([s for s in submissions if s['grade'] and s['grade'] < 60]),
+        })
+    
+    # CSV отчёт
+    elif report_format == 'csv':
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="report_assignment_{assignment_id}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Студент', 'Email', 'Дата сдачи', 'Оценка', 'Статус', 'Комментарий'])
+        for sub in submissions:
+            writer.writerow([
+                sub['student_name'], sub['student_email'],
+                sub['submitted_at'].strftime('%Y-%m-%d %H:%M'),
+                sub['grade'] if sub['grade'] else 'Не оценено',
+                'Пройдено' if sub['grade'] and sub['grade'] >= 60 else 'Не пройдено' if sub['grade'] else 'На проверке',
+                sub['teacher_comment']
+            ])
+        return response
+    
+    # PDF отчёт
+    elif report_format == 'pdf':
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="report_assignment_{assignment_id}.pdf"'
+        buffer = BytesIO()
+        p = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4
+        
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(50, height - 50, f"Отчёт по заданию: {assignment['title']}")
+        p.setFont("Helvetica", 12)
+        p.drawString(50, height - 80, f"Всего сдавших: {len(submissions)}")
+        
+        y = height - 120
+        p.setFont("Helvetica-Bold", 10)
+        p.drawString(50, y, "Студент")
+        p.drawString(200, y, "Дата сдачи")
+        p.drawString(350, y, "Оценка")
+        p.drawString(450, y, "Статус")
+        y -= 20
+        
+        p.setFont("Helvetica", 9)
+        for sub in submissions:
+            if y < 50:
+                p.showPage()
+                y = height - 50
+                p.setFont("Helvetica-Bold", 10)
+                p.drawString(50, y, "Студент")
+                p.drawString(200, y, "Дата сдачи")
+                p.drawString(350, y, "Оценка")
+                p.drawString(450, y, "Статус")
+                y -= 20
+                p.setFont("Helvetica", 9)
+            
+            p.drawString(50, y, sub['student_name'][:30])
+            p.drawString(200, y, sub['submitted_at'].strftime('%d.%m.%Y'))
+            grade_str = str(sub['grade']) if sub['grade'] else "-"
+            p.drawString(350, y, grade_str)
+            status = "✓" if sub['grade'] and sub['grade'] >= 60 else "✗" if sub['grade'] else "?"
+            p.drawString(450, y, status)
+            y -= 20
+        
+        p.save()
+        response.write(buffer.getvalue())
+        buffer.close()
+        return response
+    
+    # JSON отчёт
+    elif report_format == 'json':
+        data = {
+            'assignment_id': assignment_id,
+            'assignment_title': assignment['title'],
+            'statistics': {
+                'total_submissions': len(submissions),
+                'avg_grade': sum(s['grade'] for s in submissions if s['grade']) / len([s for s in submissions if s['grade']]) if any(s['grade'] for s in submissions) else 0,
+            },
+            'submissions': submissions
+        }
+        return HttpResponse(json.dumps(data, ensure_ascii=False, indent=2), 
+                          content_type='application/json; charset=utf-8')
+    
+    return HttpResponse("Неизвестный формат", status=400)
+
+
+# ============= HTML ШАБЛОНЫ (вставьте в ваш проект) =============
+# Сохраните это как templates/teacher_dashboard.html
+TEACHER_DASHBOARD_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Панель преподавателя</title>
+    <style>
+        .assignment-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            text-decoration: none;
+            background: #007bff;
+            color: white;
+            border-radius: 3px;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-group { margin-top: 10px; }
+        .small-btn {
+            background: #6c757d;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Здравствуйте, {{ teacher_name }}</h1>
+    <h2>Назначенные проверки</h2>
+    
+    {% for check in assigned_checks %}
+    <div class="assignment-card">
+        <h3>{{ check.title }}</h3>
+        <p>Дисциплина: {{ check.course|default:"-" }}</p>
+        <p>Статус: {{ check.status }}</p>
+        
+        <div class="btn-group">
+            <a href="{% url 'generate_report' check.id %}" class="btn">
+                📄 Составить отчёт
+            </a>
+            <a href="{% url 'generate_report' check.id %}?format=csv" class="btn small-btn">
+                📊 CSV
+            </a>
+            <a href="{% url 'generate_report' check.id %}?format=pdf" class="btn small-btn">
+                📑 PDF
+            </a>
+            <a href="{% url 'generate_report' check.id %}?format=json" class="btn small-btn">
+                🔧 JSON
+            </a>
+        </div>
+    </div>
+    {% empty %}
+        <p>Нет назначенных проверок.</p>
+    {% endfor %}
+</body>
+</html>
+"""
+
+REPORT_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отчёт: {{ assignment.title }}</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .passed { color: green; font-weight: bold; }
+        .failed { color: red; }
+        .stats { background: #e9ecef; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .btn { padding: 5px 10px; background: #007bff; color: white; text-decoration: none; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Отчёт по заданию: {{ assignment.title }}</h1>
+    
+    <div class="stats">
+        <strong>Статистика:</strong><br>
+        Всего сдало: {{ total_submissions }}<br>
+        Средняя оценка: {{ avg_grade|floatformat:1 }}<br>
+        Сдало (≥60): {{ passed_count }}<br>
+        Не сдало: {{ failed_count }}
+    </div>
+    
+    <a href="?format=csv" class="btn">Скачать CSV</a>
+    <a href="?format=pdf" class="btn">Скачать PDF</a>
+    <a href="?format=json" class="btn">Скачать JSON</a>
+    <br><br>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Студент</th>
+                <th>Email</th>
+                <th>Дата сдачи</th>
+                <th>Оценка</th>
+                <th>Статус</th>
+                <th>Комментарий</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub in submissions %}
+            <tr>
+                <td>{{ sub.student_name }}</td>
+                <td>{{ sub.student_email }}</td>
+                <td>{{ sub.submitted_at|date:"d.m.Y H:i" }}</td>
+                <td>{{ sub.grade|default:"—" }}</td>
+                <td class="{% if sub.grade and sub.grade >= 60 %}passed{% elif sub.grade %}failed{% endif %}">
+                    {% if sub.grade >= 60 %}✓ Сдано{% elif sub.grade %}✗ Не сдано{% else %}⏳ На проверке{% endif %}
+                </td>
+                <td>{{ sub.teacher_comment|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+"""
+
+# В urls.py добавьте эти маршруты:
+"""
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('teacher/dashboard/', views.teacher_dashboard, name='teacher_dashboard'),
+    path('teacher/report/<int:assignment_id>/', views.generate_report, name='generate_report'),
+]

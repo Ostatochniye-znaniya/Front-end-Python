@@ -1,0 +1,549 @@
+# ОДИН ПОЛНЫЙ ФАЙЛ - СТАТУС "ОТКЛОНЁН" И ЗАМЕЧАНИЯ ОТ ЛПР
+# Скопируйте и вставьте целиком
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from django.urls import reverse
+from django.db import models
+from django.utils import timezone
+from django.contrib import messages
+import csv
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+import json
+from datetime import datetime
+
+# ============= models.py - ПОЛНАЯ МОДЕЛЬ С НОВЫМИ ПОЛЯМИ =============
+"""
+Добавьте эти поля в вашу модель InspectionAssignments:
+
+class InspectionAssignment(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'На проверке'),
+        ('approved', 'Одобрено'),
+        ('rejected', 'Отклонён'),
+        ('in_progress', 'В работе'),
+    ]
+    
+    # Существующие поля
+    title = models.CharField(max_length=200)
+    course = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Новые поля
+    electronic_review_remarks = models.TextField(blank=True, null=True, verbose_name="Электронные замечания по проверке")
+    electronic_submitted = models.BooleanField(default=False, verbose_name="Электронная версия подана")
+    
+    # Поля для ЛПР (лицо, принимающее решение)
+    lpr_rejection_reason = models.TextField(blank=True, null=True, verbose_name="Причина отклонения от ЛПР")
+    lpr_rejection_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата отклонения ЛПР")
+    lpr_comment = models.TextField(blank=True, null=True, verbose_name="Замечания от ЛПР")
+    lpr_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="ФИО ЛПР")
+"""
+
+def teacher_dashboard(request):
+    """Страница преподавателя со списком назначенных проверок"""
+    # Здесь получите ваши назначенные проверки из БД
+    class FakeInspectionAssignment:
+        def __init__(self, id, title, course, status, electronic_submitted=False, 
+                     electronic_review_remarks="", lpr_rejection_reason="", 
+                     lpr_comment="", lpr_name="", lpr_rejection_date=None):
+            self.id = id
+            self.title = title
+            self.course = course
+            self.status = status
+            self.submission_count = 15
+            self.electronic_submitted = electronic_submitted
+            self.electronic_review_remarks = electronic_review_remarks
+            self.lpr_rejection_reason = lpr_rejection_reason
+            self.lpr_comment = lpr_comment
+            self.lpr_name = lpr_name
+            self.lpr_rejection_date = lpr_rejection_date or timezone.now()
+            
+            # Для отображения статуса на русском
+            self.get_status_display = {
+                'pending': 'На проверке',
+                'approved': 'Одобрено',
+                'rejected': 'Отклонён',
+                'in_progress': 'В работе'
+            }.get(status, status)
+    
+    assigned_checks = [
+        FakeInspectionAssignment(1, "Лабораторная работа №1", "Программирование", "pending", 
+                                 electronic_submitted=True, 
+                                 electronic_review_remarks="Все файлы загружены корректно"),
+        
+        FakeInspectionAssignment(2, "Курсовая работа", "Базы данных", "rejected",
+                                 electronic_submitted=True,
+                                 electronic_review_remarks="Требуется доработка",
+                                 lpr_rejection_reason="Несоответствие требованиям",
+                                 lpr_comment="Оформление не соответствует ГОСТ. Много орфографических ошибок. Список литературы устаревший.",
+                                 lpr_name="Петрова М.И."),
+        
+        FakeInspectionAssignment(3, "Тестирование", "Web-разработка", "approved",
+                                 electronic_submitted=True,
+                                 electronic_review_remarks="Работа принята"),
+        
+        FakeInspectionAssignment(4, "Дипломная работа", "Информационные системы", "rejected",
+                                 electronic_submitted=False,
+                                 electronic_review_remarks="Отсутствуют файлы",
+                                 lpr_rejection_reason="Неполный пакет документов",
+                                 lpr_comment="Отсутствует акт о внедрении. Нет подписей на титульном листе.",
+                                 lpr_name="Сидоров А.В."),
+        
+        FakeInspectionAssignment(5, "Практическая работа", "Python", "in_progress",
+                                 electronic_submitted=True,
+                                 electronic_review_remarks="Проверка выполняется"),
+    ]
+    
+    return render(request, 'teacher_dashboard.html', {
+        'assigned_checks': assigned_checks,
+        'teacher_name': "Иван Петрович",
+    })
+
+def edit_inspection(request, assignment_id):
+    """Редактирование полей electronic_review_remarks и electronic_submitted"""
+    class FakeInspection:
+        def __init__(self, id, title):
+            self.id = id
+            self.title = title
+            self.electronic_submitted = False
+            self.electronic_review_remarks = ""
+    
+    inspection = FakeInspection(assignment_id, f"Задание #{assignment_id}")
+    
+    if request.method == 'POST':
+        messages.success(request, 'Данные успешно сохранены!')
+        return redirect('teacher_dashboard')
+    
+    return render(request, 'edit_inspection.html', {
+        'inspection': inspection,
+    })
+
+def generate_report(request, assignment_id):
+    """Генерация отчёта по заданию с учётом статуса и замечаний ЛПР"""
+    assignment = {
+        "id": assignment_id, 
+        "title": f"Задание #{assignment_id}", 
+        "course": "Курс",
+        "electronic_submitted": True,
+        "electronic_review_remarks": "Все документы проверены",
+        "status": "rejected",
+        "lpr_rejection_reason": "Несоответствие требованиям",
+        "lpr_comment": "Требуется серьёзная доработка",
+        "lpr_name": "Петрова М.И.",
+        "lpr_rejection_date": timezone.now()
+    }
+    
+    submissions = [
+        {
+            "student_name": "Анна Смирнова", 
+            "student_email": "anna@mail.ru", 
+            "submitted_at": timezone.now(), 
+            "grade": 85, 
+            "teacher_comment": "Отлично!",
+            "electronic_submitted": True,
+            "electronic_review_remarks": "Работа принята"
+        },
+        {
+            "student_name": "Иван Петров", 
+            "student_email": "ivan@mail.ru", 
+            "submitted_at": timezone.now(), 
+            "grade": 45, 
+            "teacher_comment": "Доработать",
+            "electronic_submitted": False,
+            "electronic_review_remarks": "Отсутствуют файлы"
+        },
+    ]
+    
+    report_format = request.GET.get('format', 'html')
+    
+    if report_format == 'html':
+        return render(request, 'report.html', {
+            'assignment': assignment,
+            'submissions': submissions,
+            'total_submissions': len(submissions),
+            'avg_grade': 65,
+            'passed_count': 1,
+            'failed_count': 1,
+            'electronic_submitted_count': 1,
+        })
+    
+    elif report_format == 'csv':
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="report_assignment_{assignment_id}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Студент', 'Оценка', 'Электронная подана', 'Электронные замечания', 
+                        'Статус проверки', 'Причина отклонения ЛПР', 'Замечания ЛПР', 'ЛПР'])
+        for sub in submissions:
+            writer.writerow([
+                sub['student_name'], sub['grade'], 
+                'Да' if sub['electronic_submitted'] else 'Нет',
+                sub['electronic_review_remarks'],
+                assignment['status'],
+                assignment.get('lpr_rejection_reason', ''),
+                assignment.get('lpr_comment', ''),
+                assignment.get('lpr_name', '')
+            ])
+        return response
+    
+    elif report_format == 'json':
+        data = {
+            'assignment_id': assignment_id,
+            'status': assignment['status'],
+            'lpr_info': {
+                'rejection_reason': assignment.get('lpr_rejection_reason'),
+                'comment': assignment.get('lpr_comment'),
+                'lpr_name': assignment.get('lpr_name'),
+                'rejection_date': assignment.get('lpr_rejection_date').isoformat() if assignment.get('lpr_rejection_date') else None
+            },
+            'submissions': submissions
+        }
+        return HttpResponse(json.dumps(data, ensure_ascii=False, indent=2), 
+                          content_type='application/json; charset=utf-8')
+    
+    return HttpResponse("Неизвестный формат", status=400)
+
+
+# ============= HTML ШАБЛОНЫ =============
+
+# templates/teacher_dashboard.html - С ОТОБРАЖЕНИЕМ СТАТУСА И ЗАМЕЧАНИЙ ЛПР
+TEACHER_DASHBOARD_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Панель преподавателя</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: #1a1a2e; margin-bottom: 10px; }
+        h2 { color: #16213e; margin: 20px 0; }
+        
+        .assignment-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .assignment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .card-header h3 {
+            font-size: 1.3em;
+            color: #1a1a2e;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-pending { background: #ffc107; color: #856404; }
+        .status-approved { background: #28a745; color: white; }
+        .status-rejected { background: #dc3545; color: white; }
+        .status-in_progress { background: #17a2b8; color: white; }
+        
+        .info-row {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .rejection-box {
+            background: #fff5f5;
+            border-left: 4px solid #dc3545;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 6px;
+        }
+        .rejection-title {
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 8px;
+        }
+        .rejection-text {
+            color: #721c24;
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+        .rejection-meta {
+            font-size: 12px;
+            color: #856404;
+            margin-top: 8px;
+        }
+        
+        .remarks-box {
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .btn-group { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; transform: translateY(-1px); }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👨‍🏫 Здравствуйте, {{ teacher_name }}</h1>
+        <h2>📋 Назначенные проверки</h2>
+        
+        {% for check in assigned_checks %}
+        <div class="assignment-card">
+            <div class="card-header">
+                <h3>{{ check.title }}</h3>
+                <span class="status-badge status-{{ check.status }}">
+                    {% if check.status == 'pending' %}⏳ На проверке
+                    {% elif check.status == 'approved' %}✅ Одобрено
+                    {% elif check.status == 'rejected' %}❌ Отклонён
+                    {% elif check.status == 'in_progress' %}🔄 В работе
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-item"><span class="info-label">📚 Дисциплина:</span> {{ check.course|default:"-" }}</div>
+                <div class="info-item"><span class="info-label">📊 Студентов:</span> {{ check.submission_count }}</div>
+                <div class="info-item">
+                    <span class="info-label">📧 Электронная версия:</span>
+                    {% if check.electronic_submitted %}
+                        <span style="color: #28a745;">✓ Подана</span>
+                    {% else %}
+                        <span style="color: #dc3545;">✗ Не подана</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if check.electronic_review_remarks %}
+            <div class="remarks-box">
+                <strong>📝 Электронные замечания:</strong> {{ check.electronic_review_remarks }}
+            </div>
+            {% endif %}
+            
+            <!-- ОТОБРАЖЕНИЕ ЗАМЕЧАНИЙ ЛПР ДЛЯ СТАТУСА "ОТКЛОНЁН" -->
+            {% if check.status == 'rejected' %}
+            <div class="rejection-box">
+                <div class="rejection-title">⚠️ ПРОВЕРКА ОТКЛОНЕНА ЛПР</div>
+                <div class="rejection-text">
+                    <strong>Причина отклонения:</strong> {{ check.lpr_rejection_reason|default:"Не указана" }}
+                </div>
+                <div class="rejection-text">
+                    <strong>Замечания от ЛПР:</strong><br>
+                    {{ check.lpr_comment|default:"Замечаний нет"|linebreaksbr }}
+                </div>
+                <div class="rejection-meta">
+                    👤 ЛПР: {{ check.lpr_name|default:"Не указан" }} | 
+                    📅 Дата: {{ check.lpr_rejection_date|date:"d.m.Y H:i" }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="btn-group">
+                <a href="{% url 'generate_report' check.id %}" class="btn btn-primary">
+                    📄 Составить отчёт
+                </a>
+                <a href="{% url 'edit_inspection' check.id %}" class="btn btn-success">
+                    ✏️ Редактировать
+                </a>
+                <a href="{% url 'generate_report' check.id %}?format=csv" class="btn btn-secondary">
+                    📊 CSV
+                </a>
+                <a href="{% url 'generate_report' check.id %}?format=pdf" class="btn btn-secondary">
+                    📑 PDF
+                </a>
+                <a href="{% url 'generate_report' check.id %}?format=json" class="btn btn-secondary">
+                    🔧 JSON
+                </a>
+            </div>
+        </div>
+        {% empty %}
+            <p style="text-align: center; padding: 40px;">Нет назначенных проверок</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
+"""
+
+EDIT_INSPECTION_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Редактирование проверки</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f0f2f5; }
+        .card {
+            background: white;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 { margin-top: 0; color: #1a1a2e; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        textarea { height: 120px; resize: vertical; }
+        input[type="checkbox"] { width: 20px; height: 20px; margin-right: 10px; }
+        .btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-secondary {
+            background: #6c757d;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .btn-secondary:hover { background: #5a6268; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>✏️ Редактирование: {{ inspection.title }}</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="electronic_submitted" {% if inspection.electronic_submitted %}checked{% endif %}>
+                    Электронная версия подана
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Электронные замечания по проверке:</label>
+                <textarea name="electronic_review_remarks">{{ inspection.electronic_review_remarks }}</textarea>
+            </div>
+            <button type="submit" class="btn">💾 Сохранить</button>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-secondary">❌ Отмена</a>
+        </form>
+    </div>
+</body>
+</html>
+"""
+
+REPORT_HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отчёт по проверке</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial; margin: 20px; background: white; }
+        h1 { color: #1a1a2e; }
+        .stats { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #007bff; color: white; }
+        .btn { padding: 8px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px; }
+        .rejected { background: #fff5f5; border-left: 4px solid #dc3545; padding: 10px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>📊 Отчёт по заданию: {{ assignment.title }}</h1>
+    
+    {% if assignment.status == 'rejected' %}
+    <div class="rejected">
+        <strong>⚠️ СТАТУС: ОТКЛОНЁН</strong><br>
+        Причина: {{ assignment.lpr_rejection_reason }}<br>
+        Замечания ЛПР: {{ assignment.lpr_comment }}<br>
+        ЛПР: {{ assignment.lpr_name }}
+    </div>
+    {% endif %}
+    
+    <div class="stats">
+        <strong>Статистика:</strong><br>
+        Всего: {{ total_submissions }} | Средняя оценка: {{ avg_grade|floatformat:1 }}<br>
+        Сдало: {{ passed_count }} | Не сдало: {{ failed_count }}
+    </div>
+    
+    <a href="?format=csv" class="btn">📥 CSV</a>
+    <a href="?format=pdf" class="btn">📥 PDF</a>
+    <a href="?format=json" class="btn">📥 JSON</a>
+    
+    <table>
+        <thead>
+            <tr><th>Студент</th><th>Оценка</th><th>Электронная подана</th><th>Замечания</th></tr>
+        </thead>
+        <tbody>
+            {% for sub in submissions %}
+            <tr>
+                <td>{{ sub.student_name }}</td>
+                <td>{{ sub.grade|default:"—" }}</td>
+                <td>{% if sub.electronic_submitted %}✅{% else %}❌{% endif %}</td>
+                <td>{{ sub.electronic_review_remarks|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+"""
+
+
+# ============= urls.py =============
+"""
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('teacher/dashboard/', views.teacher_dashboard, name='teacher_dashboard'),
+    path('teacher/edit/<int:assignment_id>/', views.edit_inspection, name='edit_inspection'),
+    path('teacher/report/<int:assignment_id>/', views.generate_report, name='generate_report'),
+]
+"""
+
+# Установите: pip install reportlab
