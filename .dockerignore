@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+Dockerfile
+docker-compose.dev.yml
+docker-compose.prod.yml
+README.md
+LICENSE
+.env
+Makefile
